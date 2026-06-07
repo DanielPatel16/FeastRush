@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FeastRush — Restaurant Owner Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #faf8f5;
+    --surface: #ffffff;
+    --card: #ffffff;
+    --card2: #f5f2ee;
+    --border: #ede9e3;
+    --border2: #e0dbd4;
+    --accent: #ff4d00;
+    --accent2: #ffb800;
+    --accent-light: rgba(255,77,0,0.08);
+    --green: #059669;
+    --green-light: rgba(5,150,105,0.08);
+    --blue: #2563eb;
+    --blue-light: rgba(37,99,235,0.08);
+    --red: #dc2626;
+    --red-light: rgba(220,38,38,0.08);
+    --purple: #7c3aed;
+    --text: #1a1714;
+    --text2: #4a4540;
+    --muted: #9b9490;
+    --muted2: #c4bfba;
+    --sidebar-w: 256px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'DM Sans', sans-serif; min-height: 100vh;
+    display: flex; overflow-x: hidden;
+  }
+
+  /* ===== SIDEBAR ===== */
+  .sidebar {
+    width: var(--sidebar-w); flex-shrink: 0; height: 100vh;
+    position: sticky; top: 0; background: var(--text);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+
+  .sidebar-logo {
+    padding: 26px 22px 22px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .logo-icon {
+    width: 38px; height: 38px; background: var(--accent);
+    border-radius: 10px; display: flex; align-items: center;
+    justify-content: center; font-size: 1.2rem; flex-shrink: 0;
+  }
+  .logo-txt { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.15rem; letter-spacing: -0.5px; color: #fff; }
+  .logo-txt span { color: var(--accent); }
+  .logo-owner { font-size: 0.6rem; font-weight: 600; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 1.5px; }
+
+  .rest-info-card {
+    margin: 16px 14px; padding: 14px;
+    background: rgba(255,255,255,0.06); border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .rest-info-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .rest-avatar { width: 38px; height: 38px; background: linear-gradient(135deg,#3d1500,var(--accent)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+  .rest-name { font-size: 0.86rem; font-weight: 700; color: #fff; }
+  .rest-type { font-size: 0.68rem; color: rgba(255,255,255,0.45); }
+  .open-toggle {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 0.72rem; color: rgba(255,255,255,0.5);
+  }
+  .toggle-wrap {
+    display: flex; align-items: center; gap: 6px; cursor: pointer;
+  }
+  .toggle {
+    width: 36px; height: 20px; border-radius: 50px; position: relative;
+    transition: background 0.3s; flex-shrink: 0;
+  }
+  .toggle.on { background: var(--green); }
+  .toggle.off { background: rgba(255,255,255,0.2); }
+  .toggle-dot {
+    position: absolute; top: 2px; width: 16px; height: 16px;
+    background: #fff; border-radius: 50%; transition: left 0.3s;
+  }
+  .toggle.on .toggle-dot { left: calc(100% - 18px); }
+  .toggle.off .toggle-dot { left: 2px; }
+  .open-label { font-size: 0.7rem; font-weight: 600; }
+  .open-label.on { color: #34d399; }
+  .open-label.off { color: rgba(255,255,255,0.4); }
+
+  .sidebar-nav { flex: 1; padding: 14px 12px; overflow-y: auto; }
+  .nav-lbl { font-size: 0.58rem; font-weight: 700; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 1.5px; padding: 0 8px; margin: 12px 0 5px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 9px; padding: 10px 10px;
+    border-radius: 10px; cursor: pointer; transition: all 0.18s;
+    color: rgba(255,255,255,0.5); font-size: 0.83rem; font-weight: 500;
+    position: relative; margin-bottom: 2px;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.85); }
+  .nav-item.active { background: var(--accent); color: #fff; }
+  .nav-icon { font-size: 0.95rem; width: 20px; text-align: center; flex-shrink: 0; }
+  .nav-badge { margin-left: auto; font-size: 0.6rem; font-weight: 700; padding: 2px 6px; border-radius: 50px; background: rgba(255,255,255,0.15); color: #fff; }
+  .nav-badge.live { background: var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+
+  .sidebar-footer { padding: 14px 12px; border-top: 1px solid rgba(255,255,255,0.08); }
+  .owner-profile { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 10px; cursor: pointer; transition: background 0.18s; }
+  .owner-profile:hover { background: rgba(255,255,255,0.06); }
+  .owner-avatar { width: 34px; height: 34px; background: linear-gradient(135deg, #1a0a00, var(--accent)); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .owner-name { font-size: 0.8rem; font-weight: 600; color: #fff; }
+  .owner-role { font-size: 0.66rem; color: rgba(255,255,255,0.4); }
+
+  /* ===== MAIN ===== */
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+  .topbar {
+    padding: 15px 28px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface); position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 1px 0 var(--border);
+  }
+  .page-title { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 800; letter-spacing: -0.5px; }
+  .page-sub { font-size: 0.72rem; color: var(--muted); margin-top: 1px; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .search-bar { display: flex; align-items: center; gap: 8px; background: var(--card2); border: 1px solid var(--border); border-radius: 10px; padding: 9px 14px; transition: border-color 0.2s; }
+  .search-bar:focus-within { border-color: var(--accent); }
+  .search-bar input { background: none; border: none; outline: none; color: var(--text); font-family: 'DM Sans'; font-size: 0.8rem; width: 160px; }
+  .search-bar input::placeholder { color: var(--muted2); }
+  .tb-btn { width: 36px; height: 36px; background: var(--card2); border: 1px solid var(--border); border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; transition: all 0.18s; position: relative; }
+  .tb-btn:hover { border-color: var(--accent); background: var(--accent-light); }
+  .tb-btn .dot { position: absolute; top: 6px; right: 6px; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; border: 1.5px solid var(--surface); }
+  .add-item-btn {
+    display: flex; align-items: center; gap: 6px; padding: 9px 16px;
+    background: var(--accent); color: #fff; border: none; border-radius: 10px;
+    font-family: 'DM Sans'; font-size: 0.82rem; font-weight: 600; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .add-item-btn:hover { background: #ff6020; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(255,77,0,0.3); }
+
+  /* PAGE CONTENT */
+  .page-content { flex: 1; overflow-y: auto; padding: 26px 28px; }
+  .page-content::-webkit-scrollbar { width: 4px; }
+  .page-content::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .section { display: none; }
+  .section.active { display: block; animation: fadeUp 0.3s ease both; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+  /* STAT CARDS */
+  .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 22px; }
+  .stat-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 20px; position: relative; overflow: hidden; transition: all 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .stat-card:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .stat-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
+  .stat-icon-wrap { width: 42px; height: 42px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; }
+  .si-o { background: var(--accent-light); }
+  .si-g { background: var(--green-light); }
+  .si-b { background: var(--blue-light); }
+  .si-r { background: var(--red-light); }
+  .stat-trend { font-size: 0.7rem; font-weight: 600; padding: 3px 8px; border-radius: 50px; }
+  .trend-up { background: var(--green-light); color: var(--green); }
+  .trend-down { background: var(--red-light); color: var(--red); }
+  .stat-value { font-family: 'Syne', sans-serif; font-size: 1.85rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 3px; }
+  .stat-label { font-size: 0.73rem; color: var(--muted); }
+
+  /* CHARTS ROW */
+  .charts-row { display: grid; grid-template-columns: 3fr 2fr; gap: 14px; margin-bottom: 22px; }
+  .chart-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .chart-title { font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 700; }
+  .chart-tabs { display: flex; gap: 4px; }
+  .c-tab { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: none; color: var(--muted); font-family: 'DM Sans'; transition: all 0.18s; }
+  .c-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* LINE CHART SIMULATION */
+  .line-chart { height: 130px; position: relative; }
+  .line-chart svg { width: 100%; height: 100%; }
+
+  /* BAR CHART */
+  .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 120px; }
+  .bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .bar { width: 100%; border-radius: 5px 5px 0 0; cursor: pointer; transition: height 0.5s cubic-bezier(0.34,1.56,0.64,1); position: relative; }
+  .bar.ba { background: linear-gradient(180deg, var(--accent), rgba(255,77,0,0.2)); }
+  .bar.bb { background: linear-gradient(180deg, var(--accent2), rgba(255,184,0,0.15)); }
+  .bar.bm { background: var(--card2); }
+  .bar:hover::after { content: attr(data-val); position: absolute; top: -22px; left: 50%; transform: translateX(-50%); background: var(--text); color: #fff; font-size: 0.62rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
+  .bar-lbl { font-size: 0.62rem; color: var(--muted); }
+
+  /* ORDERS TABLE */
+  .table-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .table-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .table-title { font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 700; }
+  .table-actions { display: flex; gap: 7px; align-items: center; }
+  .t-btn { padding: 7px 12px; border-radius: 8px; font-size: 0.74rem; font-weight: 500; cursor: pointer; font-family: 'DM Sans'; border: 1px solid var(--border); background: var(--card2); color: var(--text2); transition: all 0.18s; }
+  .t-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .t-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .t-btn.primary:hover { background: #ff6020; }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th { padding: 10px 16px; text-align: left; font-size: 0.67rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.7px; border-bottom: 1px solid var(--border); background: var(--card2); }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; cursor: pointer; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--accent-light); }
+  td { padding: 13px 16px; font-size: 0.8rem; vertical-align: middle; }
+
+  .pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 50px; font-size: 0.68rem; font-weight: 600; }
+  .p-green { background: var(--green-light); color: var(--green); border: 1px solid rgba(5,150,105,0.15); }
+  .p-yellow { background: rgba(255,184,0,0.1); color: #b45309; border: 1px solid rgba(255,184,0,0.25); }
+  .p-red { background: var(--red-light); color: var(--red); border: 1px solid rgba(220,38,38,0.15); }
+  .p-blue { background: var(--blue-light); color: var(--blue); border: 1px solid rgba(37,99,235,0.15); }
+  .p-orange { background: var(--accent-light); color: var(--accent); border: 1px solid rgba(255,77,0,0.2); }
+
+  .action-icons { display: flex; gap: 5px; }
+  .ai { width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--border); background: var(--card2); display: flex; align-items: center; justify-content: center; font-size: 0.72rem; cursor: pointer; transition: all 0.18s; }
+  .ai:hover { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+  .ai.danger:hover { border-color: var(--red); background: var(--red-light); color: var(--red); }
+
+  /* MINI STATS */
+  .mini-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 22px; }
+  .mini-stat { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; display: flex; align-items: center; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .ms-icon { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0; }
+  .ms-val { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 800; }
+  .ms-lbl { font-size: 0.7rem; color: var(--muted); }
+
+  /* MENU ITEMS */
+  .menu-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+  .menu-item-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    overflow: hidden; transition: all 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .menu-item-card:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+  .menu-item-card.unavailable { opacity: 0.55; }
+  .mic-img { height: 110px; display: flex; align-items: center; justify-content: center; font-size: 3rem; position: relative; }
+  .img-bg1{background:linear-gradient(135deg,#fff5f0,#ffe4d9)}
+  .img-bg2{background:linear-gradient(135deg,#f0fdf4,#d1fae5)}
+  .img-bg3{background:linear-gradient(135deg,#fff8e7,#fef3c7)}
+  .img-bg4{background:linear-gradient(135deg,#eff6ff,#dbeafe)}
+  .img-bg5{background:linear-gradient(135deg,#fdf4ff,#f3e8ff)}
+  .img-bg6{background:linear-gradient(135deg,#fff1f2,#ffd7db)}
+
+  .mic-badge { position: absolute; top: 10px; left: 10px; font-size: 0.62rem; font-weight: 700; padding: 3px 8px; border-radius: 50px; }
+  .mb-best { background: var(--accent); color: #fff; }
+  .mb-new { background: var(--green); color: #fff; }
+  .mb-spicy { background: #dc2626; color: #fff; }
+
+  .avail-toggle { position: absolute; top: 10px; right: 10px; }
+  .avail-switch { width: 34px; height: 18px; border-radius: 50px; position: relative; cursor: pointer; transition: background 0.2s; border: none; }
+  .avail-switch.on { background: var(--green); }
+  .avail-switch.off { background: var(--muted2); }
+  .avail-dot { position: absolute; top: 2px; width: 14px; height: 14px; background: #fff; border-radius: 50%; transition: left 0.2s; }
+  .avail-switch.on .avail-dot { left: calc(100% - 16px); }
+  .avail-switch.off .avail-dot { left: 2px; }
+
+  .mic-body { padding: 14px; }
+  .mic-name { font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 700; margin-bottom: 4px; }
+  .mic-desc { font-size: 0.72rem; color: var(--muted); line-height: 1.5; margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mic-footer { display: flex; align-items: center; justify-content: space-between; }
+  .mic-price { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 800; }
+  .mic-price .orig { font-size: 0.72rem; color: var(--muted2); text-decoration: line-through; font-weight: 400; margin-right: 2px; }
+  .mic-orders { font-size: 0.68rem; color: var(--muted); }
+  .mic-actions { display: flex; gap: 5px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .mic-btn { flex: 1; padding: 7px; border-radius: 7px; font-size: 0.72rem; font-weight: 600; cursor: pointer; font-family: 'DM Sans'; border: 1px solid var(--border); background: var(--card2); color: var(--text2); transition: all 0.18s; text-align: center; }
+  .mic-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+  .mic-btn.del:hover { border-color: var(--red); color: var(--red); background: var(--red-light); }
+
+  /* VEG DOT */
+  .veg-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 0.64rem; color: var(--green); font-weight: 600; margin-bottom: 6px; }
+  .veg-tag::before { content: ''; width: 8px; height: 8px; border-radius: 2px; border: 1.5px solid var(--green); display: flex; align-items: center; justify-content: center; }
+  .veg-tag::after { content: '●'; font-size: 0.45rem; position: relative; left: -12px; color: var(--green); }
+  .nonveg-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 0.64rem; color: var(--red); font-weight: 600; margin-bottom: 6px; }
+
+  /* LIVE ORDERS */
+  .live-orders-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 22px; }
+  .live-order-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    overflow: hidden; transition: all 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .loc-header { padding: 12px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .loc-id { font-family: 'Syne', sans-serif; font-size: 0.82rem; font-weight: 700; }
+  .loc-time { font-size: 0.68rem; color: var(--muted); }
+  .loc-items { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+  .loc-item { display: flex; justify-content: space-between; font-size: 0.76rem; padding: 3px 0; }
+  .loc-item .qty { background: var(--accent); color: #fff; font-size: 0.6rem; font-weight: 700; width: 16px; height: 16px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; margin-right: 5px; }
+  .loc-total { padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 0.78rem; font-weight: 700; }
+  .loc-actions { padding: 12px 14px; display: flex; gap: 7px; }
+  .loc-btn { flex: 1; padding: 8px; border-radius: 8px; font-size: 0.74rem; font-weight: 600; cursor: pointer; font-family: 'DM Sans'; border: 1px solid; text-align: center; transition: all 0.2s; }
+  .loc-accept { background: var(--green); border-color: var(--green); color: #fff; }
+  .loc-accept:hover { background: #047857; }
+  .loc-reject { background: transparent; border-color: var(--border); color: var(--muted); }
+  .loc-reject:hover { border-color: var(--red); color: var(--red); }
+  .loc-ready { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .loc-ready:hover { background: #1d4ed8; }
+
+  /* REVIEWS */
+  .review-list { display: flex; flex-direction: column; gap: 12px; }
+  .review-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .review-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
+  .reviewer { display: flex; align-items: center; gap: 9px; }
+  .reviewer-avatar { width: 34px; height: 34px; border-radius: 9px; background: var(--card2); display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+  .reviewer-name { font-size: 0.84rem; font-weight: 600; }
+  .review-date { font-size: 0.68rem; color: var(--muted); }
+  .review-stars { color: var(--accent2); font-size: 0.8rem; letter-spacing: 1px; }
+  .review-text { font-size: 0.8rem; color: var(--text2); line-height: 1.6; margin-bottom: 10px; }
+  .review-items { display: flex; gap: 6px; flex-wrap: wrap; }
+  .review-item-tag { font-size: 0.66rem; background: var(--card2); border: 1px solid var(--border); color: var(--muted); padding: 2px 8px; border-radius: 50px; }
+  .reply-btn { padding: 6px 12px; border-radius: 7px; font-size: 0.72rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--card2); color: var(--text2); font-family: 'DM Sans'; transition: all 0.18s; }
+  .reply-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+
+  /* SETTINGS */
+  .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .settings-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .settings-title { font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 700; margin-bottom: 16px; }
+  .form-group { margin-bottom: 14px; }
+  .form-label { display: block; font-size: 0.72rem; font-weight: 500; color: var(--muted); margin-bottom: 6px; }
+  .form-input { width: 100%; background: var(--card2); border: 1px solid var(--border); border-radius: 9px; padding: 10px 13px; color: var(--text); font-family: 'DM Sans'; font-size: 0.84rem; outline: none; transition: border-color 0.2s; appearance: none; }
+  .form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+  .form-input::placeholder { color: var(--muted2); }
+  textarea.form-input { resize: vertical; min-height: 80px; }
+  .save-btn { padding: 10px 20px; border-radius: 9px; background: var(--accent); border: none; color: #fff; font-family: 'DM Sans'; font-size: 0.84rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .save-btn:hover { background: #ff6020; transform: translateY(-1px); }
+
+  /* HOURS */
+  .hours-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .hours-row:last-child { border-bottom: none; }
+  .hours-day { font-size: 0.82rem; font-weight: 600; width: 80px; }
+  .hours-times { display: flex; gap: 8px; align-items: center; font-size: 0.78rem; color: var(--muted); }
+  .hours-input { background: var(--card2); border: 1px solid var(--border); border-radius: 7px; padding: 5px 9px; font-family: 'DM Sans'; font-size: 0.76rem; outline: none; color: var(--text); width: 80px; }
+
+  /* MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(26,23,20,0.5); display: none; align-items: center; justify-content: center; z-index: 300; backdrop-filter: blur(4px); }
+  .modal-overlay.show { display: flex; animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  .modal { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 26px; width: 500px; max-width: 90vw; animation: slideUp 0.3s ease; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+  @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+  .modal-title { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; margin-bottom: 5px; }
+  .modal-sub { font-size: 0.78rem; color: var(--muted); margin-bottom: 20px; }
+  .modal-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .modal-actions { display: flex; gap: 9px; margin-top: 18px; }
+  .m-btn { flex: 1; padding: 11px; border-radius: 10px; font-family: 'DM Sans'; font-size: 0.86rem; font-weight: 600; cursor: pointer; transition: all 0.2s; border: 1px solid; }
+  .m-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .m-primary:hover { background: #ff6020; }
+  .m-ghost { background: transparent; border-color: var(--border); color: var(--muted); }
+  .m-ghost:hover { border-color: var(--border2); color: var(--text); }
+
+  /* EMOJI GRID */
+  .emoji-grid { display: grid; grid-template-columns: repeat(6,1fr); gap: 6px; margin-bottom: 12px; }
+  .emoji-opt { padding: 8px; border-radius: 8px; border: 1.5px solid var(--border); text-align: center; font-size: 1.2rem; cursor: pointer; transition: all 0.18s; }
+  .emoji-opt:hover { border-color: var(--accent); background: var(--accent-light); }
+  .emoji-opt.selected { border-color: var(--accent); background: var(--accent-light); }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 22px; right: 22px; transform: translateY(60px) scale(0.95); background: var(--text); color: #fff; border-radius: 12px; padding: 12px 18px; font-size: 0.8rem; font-weight: 500; box-shadow: 0 8px 32px rgba(0,0,0,0.2); z-index: 600; transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1); display: flex; align-items: center; gap: 8px; }
+  .toast.show { transform: translateY(0) scale(1); }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🍕</div>
+    <div>
+      <div class="logo-txt">Feast<span>Rush</span></div>
+      <div class="logo-owner">Owner Panel</div>
+    </div>
+  </div>
+
+  <!-- RESTAURANT CARD -->
+  <div class="rest-info-card">
+    <div class="rest-info-top">
+      <div class="rest-avatar">🍕</div>
+      <div>
+        <div class="rest-name">Pizza Palace</div>
+        <div class="rest-type">Italian · Surat, GJ</div>
+      </div>
+    </div>
+    <div class="open-toggle">
+      <span>Restaurant Status</span>
+      <div class="toggle-wrap" onclick="toggleRestaurant()">
+        <div class="toggle on" id="rest-toggle"><div class="toggle-dot"></div></div>
+        <span class="open-label on" id="rest-label">Open</span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-lbl">Overview</div>
+    <a class="nav-item active" onclick="showSection('dashboard',this)"><span class="nav-icon">⊞</span> Dashboard</a>
+    <a class="nav-item" onclick="showSection('live-orders',this)"><span class="nav-icon">🔴</span> Live Orders <span class="nav-badge live">3</span></a>
+
+    <div class="nav-lbl">Management</div>
+    <a class="nav-item" onclick="showSection('menu',this)"><span class="nav-icon">🍽️</span> Menu Manager</a>
+    <a class="nav-item" onclick="showSection('orders-history',this)"><span class="nav-icon">📦</span> Order History</a>
+    <a class="nav-item" onclick="showSection('reviews',this)"><span class="nav-icon">⭐</span> Reviews <span class="nav-badge">24</span></a>
+
+    <div class="nav-lbl">Business</div>
+    <a class="nav-item" onclick="showSection('earnings',this)"><span class="nav-icon">💰</span> Earnings</a>
+    <a class="nav-item" onclick="showSection('settings',this)"><span class="nav-icon">⚙️</span> Settings</a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="owner-profile">
+      <div class="owner-avatar">R</div>
+      <div><div class="owner-name">Rahul Mehta</div><div class="owner-role">Restaurant Owner</div></div>
+      <span style="margin-left:auto;color:rgba(255,255,255,0.3);font-size:0.85rem">↩</span>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div>
+      <div class="page-title" id="page-title">Dashboard</div>
+      <div class="page-sub" id="page-sub">Monday, June 6 2026 · Good morning, Rahul 🌅</div>
+    </div>
+    <div class="topbar-right">
+      <div class="search-bar"><span>🔍</span><input type="text" placeholder="Search orders, items..."/></div>
+      <div class="tb-btn">🔔<div class="dot"></div></div>
+      <button class="add-item-btn" onclick="openModal()">+ Add Menu Item</button>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <!-- DASHBOARD -->
+    <div class="section active" id="sec-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon-wrap si-o">💰</div>
+            <span class="stat-trend trend-up">↑ 14.2%</span>
+          </div>
+          <div class="stat-value">₹18,420</div>
+          <div class="stat-label">Revenue Today</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon-wrap si-g">📦</div>
+            <span class="stat-trend trend-up">↑ 8.6%</span>
+          </div>
+          <div class="stat-value">142</div>
+          <div class="stat-label">Orders Today</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon-wrap si-b">⭐</div>
+            <span class="stat-trend trend-up">↑ 0.1</span>
+          </div>
+          <div class="stat-value">4.8</div>
+          <div class="stat-label">Avg. Rating</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon-wrap si-r">⏱️</div>
+            <span class="stat-trend trend-down">↑ 2 min</span>
+          </div>
+          <div class="stat-value">22 min</div>
+          <div class="stat-label">Avg. Prep Time</div>
+        </div>
+      </div>
+
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">📈 Daily Revenue</div>
+            <div class="chart-tabs">
+              <button class="c-tab active" onclick="switchBar(this,'week')">Week</button>
+              <button class="c-tab" onclick="switchBar(this,'month')">Month</button>
+            </div>
+          </div>
+          <div class="bar-chart" id="owner-bar"></div>
+          <div style="display:flex;justify-content:space-between;padding-top:7px">
+            <span style="font-size:0.68rem;color:var(--muted)">This week: <strong style="color:var(--text)">₹1,12,400</strong></span>
+            <span style="font-size:0.68rem;color:var(--green)">↑ 11.2% vs last week</span>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-header"><div class="chart-title">🍕 Top Selling Items</div></div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:0.76rem;margin-bottom:4px"><span>BBQ Chicken Pizza</span><strong>₹8,400</strong></div>
+              <div style="height:6px;background:var(--card2);border-radius:3px;overflow:hidden"><div style="height:100%;width:85%;background:linear-gradient(90deg,var(--accent),#ff8040);border-radius:3px"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:0.76rem;margin-bottom:4px"><span>Margherita Classic</span><strong>₹6,200</strong></div>
+              <div style="height:6px;background:var(--card2);border-radius:3px;overflow:hidden"><div style="height:100%;width:63%;background:linear-gradient(90deg,var(--accent2),#ffd060);border-radius:3px"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:0.76rem;margin-bottom:4px"><span>Chicken Wings</span><strong>₹4,980</strong></div>
+              <div style="height:6px;background:var(--card2);border-radius:3px;overflow:hidden"><div style="height:100%;width:51%;background:linear-gradient(90deg,var(--blue),#60a5fa);border-radius:3px"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:0.76rem;margin-bottom:4px"><span>Crispy Fries</span><strong>₹3,200</strong></div>
+              <div style="height:6px;background:var(--card2);border-radius:3px;overflow:hidden"><div style="height:100%;width:33%;background:linear-gradient(90deg,var(--green),#34d399);border-radius:3px"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:0.76rem;margin-bottom:4px"><span>Tiramisu</span><strong>₹2,100</strong></div>
+              <div style="height:6px;background:var(--card2);border-radius:3px;overflow:hidden"><div style="height:100%;width:22%;background:linear-gradient(90deg,var(--purple),#a78bfa);border-radius:3px"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECENT ORDERS TABLE -->
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">📦 Recent Orders</div>
+          <button class="t-btn" onclick="showSection('orders-history', document.querySelector('.nav-item:nth-child(4)'))">View All</button>
+        </div>
+        <table>
+          <thead><tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Amount</th><th>Time</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td>#FR-294822</td><td>Kavya Sharma</td><td>BBQ Pizza × 1, Fries × 2</td><td>₹597</td><td>3m ago</td><td><span class="pill p-yellow">👨‍🍳 Preparing</span></td><td><div class="action-icons"><div class="ai" onclick="showToast('✅ Order marked ready!')">✅</div><div class="ai danger" onclick="showToast('❌ Order rejected')">✕</div></div></td></tr>
+            <tr><td>#FR-294821</td><td>Arjun Shah</td><td>Margherita × 2, Wings × 1</td><td>₹847</td><td>12m ago</td><td><span class="pill p-blue">🛵 On the way</span></td><td><div class="action-icons"><div class="ai">👁</div></div></td></tr>
+            <tr><td>#FR-294820</td><td>Priya Mehta</td><td>4 Cheese Pizza × 1, Soup × 1</td><td>₹498</td><td>25m ago</td><td><span class="pill p-green">✓ Delivered</span></td><td><div class="action-icons"><div class="ai">👁</div></div></td></tr>
+            <tr><td>#FR-294819</td><td>Rahul Patel</td><td>Pepperoni × 1, Coke × 2</td><td>₹547</td><td>38m ago</td><td><span class="pill p-green">✓ Delivered</span></td><td><div class="action-icons"><div class="ai">👁</div></div></td></tr>
+            <tr><td>#FR-294818</td><td>Dev Kothari</td><td>Veggie Supreme × 1</td><td>₹349</td><td>52m ago</td><td><span class="pill p-red">✕ Cancelled</span></td><td><div class="action-icons"><div class="ai">👁</div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- LIVE ORDERS -->
+    <div class="section" id="sec-live-orders">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px">
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--red);animation:pulse 1.5s infinite;display:inline-block"></span>
+        <span style="font-size:0.82rem;font-weight:600;color:var(--red)">3 Active Orders · Auto-refreshing</span>
+      </div>
+      <div class="live-orders-grid">
+
+        <div class="live-order-card">
+          <div class="loc-header" style="background:rgba(255,184,0,0.06);border-bottom-color:rgba(255,184,0,0.2)">
+            <div><div class="loc-id">#FR-294822</div><div style="font-size:0.68rem;color:var(--muted)">Kavya Sharma · 📱 OTP: 4821</div></div>
+            <span class="pill p-yellow">👨‍🍳 Preparing</span>
+          </div>
+          <div class="loc-items">
+            <div class="loc-item"><span><span class="qty">1</span> BBQ Chicken Pizza</span><span>₹399</span></div>
+            <div class="loc-item"><span><span class="qty">2</span> Crispy Fries</span><span>₹198</span></div>
+          </div>
+          <div class="loc-total"><span>Total</span><span style="color:var(--accent)">₹597</span></div>
+          <div style="padding:8px 14px;font-size:0.72rem;color:var(--muted);border-bottom:1px solid var(--border)">📍 42, Sunshine Apartments, Ring Road · 1.2 km</div>
+          <div class="loc-actions">
+            <button class="loc-btn loc-ready" onclick="showToast('📦 Order marked as ready for pickup!')">Mark Ready</button>
+            <button class="loc-btn loc-reject" onclick="showToast('❌ Order rejected')">Reject</button>
+          </div>
+        </div>
+
+        <div class="live-order-card">
+          <div class="loc-header" style="background:rgba(37,99,235,0.04);border-bottom-color:rgba(37,99,235,0.15)">
+            <div><div class="loc-id">#FR-294820</div><div style="font-size:0.68rem;color:var(--muted)">Priya Mehta · 📱 OTP: 7392</div></div>
+            <span class="pill p-blue">🛵 On the way</span>
+          </div>
+          <div class="loc-items">
+            <div class="loc-item"><span><span class="qty">1</span> Margherita Classic</span><span>₹299</span></div>
+            <div class="loc-item"><span><span class="qty">1</span> Chicken Wings</span><span>₹249</span></div>
+            <div class="loc-item"><span><span class="qty">2</span> Soft Drink</span><span>₹118</span></div>
+          </div>
+          <div class="loc-total"><span>Total</span><span style="color:var(--accent)">₹666</span></div>
+          <div style="padding:8px 14px;font-size:0.72rem;color:var(--muted);border-bottom:1px solid var(--border)">📍 301, Tech Park, Majura Gate · 2.4 km</div>
+          <div class="loc-actions">
+            <button class="loc-btn loc-ready" style="background:var(--muted2);border-color:var(--muted2)" onclick="showToast('🛵 Rider is already on the way!')">Rider Assigned</button>
+          </div>
+        </div>
+
+        <div class="live-order-card" style="border:1.5px dashed var(--accent);border-radius:14px">
+          <div class="loc-header" style="background:var(--accent-light)">
+            <div><div class="loc-id">#FR-294823</div><div style="font-size:0.68rem;color:var(--muted)">Sneha Joshi · Just placed</div></div>
+            <span class="pill p-orange">🆕 New</span>
+          </div>
+          <div class="loc-items">
+            <div class="loc-item"><span><span class="qty">2</span> Four Cheese Pizza</span><span>₹758</span></div>
+            <div class="loc-item"><span><span class="qty">1</span> Tiramisu</span><span>₹179</span></div>
+          </div>
+          <div class="loc-total"><span>Total</span><span style="color:var(--accent)">₹937</span></div>
+          <div style="padding:8px 14px;font-size:0.72rem;color:var(--muted);border-bottom:1px solid var(--border)">📍 12, Shree Nagar, VIP Road · 0.8 km</div>
+          <div class="loc-actions">
+            <button class="loc-btn loc-accept" onclick="showToast('✅ Order accepted! Start preparing.')">Accept Order</button>
+            <button class="loc-btn loc-reject" onclick="showToast('❌ Order rejected')">Reject</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- MENU MANAGER -->
+    <div class="section" id="sec-menu">
+      <div class="mini-stats" style="grid-template-columns:repeat(4,1fr)">
+        <div class="mini-stat"><div class="ms-icon si-o">🍽️</div><div><div class="ms-val">20</div><div class="ms-lbl">Total Items</div></div></div>
+        <div class="mini-stat"><div class="ms-icon si-g">✅</div><div><div class="ms-val">17</div><div class="ms-lbl">Available</div></div></div>
+        <div class="mini-stat"><div class="ms-icon" style="background:var(--card2)">🚫</div><div><div class="ms-val">3</div><div class="ms-lbl">Unavailable</div></div></div>
+        <div class="mini-stat"><div class="ms-icon si-b">⭐</div><div><div class="ms-val">5</div><div class="ms-lbl">Bestsellers</div></div></div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="display:flex;gap:7px">
+          <button class="t-btn primary" onclick="filterMenu('all',this)">All (20)</button>
+          <button class="t-btn" onclick="filterMenu('veg',this)">🥦 Veg</button>
+          <button class="t-btn" onclick="filterMenu('nonveg',this)">🍗 Non-Veg</button>
+        </div>
+        <button class="add-item-btn" onclick="openModal()">+ Add New Item</button>
+      </div>
+
+      <div class="menu-grid" id="menu-grid">
+
+        <div class="menu-item-card" data-type="nonveg">
+          <div class="mic-img img-bg1">🍕
+            <div class="mic-badge mb-best">⭐ Bestseller</div>
+            <div class="avail-toggle"><button class="avail-switch on" onclick="toggleAvail(this)"><div class="avail-dot"></div></button></div>
+          </div>
+          <div class="mic-body">
+            <div class="nonveg-tag">● Non-Veg</div>
+            <div class="mic-name">BBQ Chicken Pizza</div>
+            <div class="mic-desc">Smoky BBQ sauce, grilled chicken, red onion, bell peppers, mozzarella</div>
+            <div class="mic-footer"><div class="mic-price"><span class="orig">₹449</span>₹399</div><div class="mic-orders">284 orders</div></div>
+            <div class="mic-actions">
+              <div class="mic-btn" onclick="showToast('✏️ Editing BBQ Chicken Pizza')">✏️ Edit</div>
+              <div class="mic-btn del" onclick="showToast('🗑️ Item deleted')">🗑 Delete</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="menu-item-card" data-type="veg">
+          <div class="mic-img img-bg2">🍕
+            <div class="mic-badge mb-best">⭐ Bestseller</div>
+            <div class="avail-toggle"><button class="avail-switch on" onclick="toggleAvail(this)"><div class="avail-dot"></div></button></div>
+          </div>
+          <div class="mic-body">
+            <div class="veg-tag">● Veg</div>
+            <div class="mic-name">Margherita Classic</div>
+            <div class="mic-desc">San Marzano tomato sauce, fresh mozzarella, basil on hand-tossed dough</div>
+            <div class="mic-footer"><div class="mic-price">₹299</div><div class="mic-orders">198 orders</div></div>
+            <div class="mic-actions">
+              <div class="mic-btn" onclick="showToast('✏️ Editing')">✏️ Edit</div>
+              <div class="mic-btn del" onclick="showToast('🗑️ Deleted')">🗑 Delete</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="menu-item-card" data-type="nonveg">
+          <div class="mic-img img-bg3">🍗
+            <div class="mic-badge mb-spicy">🌶 Spicy</div>
+            <div class="avail-toggle"><button class="avail-switch on" onclick="toggleAvail(this)"><div class="avail-dot"></div></button></div>
+          </div>
+          <div class="mic-body">
+            <div class="nonveg-tag">● Non-Veg</div>
+            <div class="mic-name">Chicken Wings</div>
+            <div class="mic-desc">Crispy fried wings tossed in BBQ or hot sauce, served with dip</div>
+            <div class="mic-footer"><div class="mic-price"><span class="orig">₹299</span>₹249</div><div class="mic-orders">156 orders</div></div>
+            <div class="mic-actions">
+              <div class="mic-btn" onclick="showToast('✏️ Editing')">✏️ Edit</div>
+              <div class="mic-btn del">🗑 Delete</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="menu-item-card unavailable" data-type="veg">
+          <div class="mic-img img-bg4">🍝
+            <div class="avail-toggle"><button class="avail-switch off" onclick="toggleAvail(this)"><div class="avail-dot"></div></button></div>
+          </div>
+          <div class="mic-body">
+            <div class="veg-tag">● Veg</div>
+            <div class="mic-name">Penne Arrabbiata</div>
+            <div class="mic-desc">Penne pasta in spicy tomato sauce with garlic, chili flakes & fresh herbs</div>
+            <div class="mic-footer"><div class="mic-price">₹229</div><div class="mic-orders" style="color:var(--red)">Unavailable</div></div>
+            <div class="mic-actions">
+              <div class="mic-btn" onclick="showToast('✏️ Editing')">✏️ Edit</div>
+              <div class="mic-btn del">🗑 Delete</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="menu-item-card" data-type="veg">
+          <div class="mic-img img-bg5">🍰
+            <div class="mic-badge mb-new">🆕 New</div>
+            <div class="avail-toggle"><button class="avail-switch on" onclick="toggleAvail(this)"><div class="avail-dot"></div></button></div>
+          </div>
+          <div class="mic-body">
+            <div class="veg-tag">● Veg</div>
+            <div class="mic-name">Tiramisu</div>
+            <div class="mic-desc">Classic Italian dessert with espresso-soaked ladyfingers & mascarpone</div>
+            <div class="mic-footer"><div class="mic-price">₹179</div><div class="mic-orders">42 orders</div></div>
+            <div class="mic-actions">
+              <div class="mic-btn" onclick="showToast('✏️ Editing')">✏️ Edit</div>
+              <div class="mic-btn del">🗑 Delete</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="menu-item-card" data-type="veg">
+          <div class="mic-img img-bg6">🧀
+            <div class="avail-toggle"><button class="avail-switch on" onclick="toggleAvail(this)"><div class="avail-dot"></div></button></div>
+          </div>
+          <div class="mic-body">
+            <div class="veg-tag">● Veg</div>
+            <div class="mic-name">Garlic Bread with Cheese</div>
+            <div class="mic-desc">Toasted garlic butter bread topped with melted mozzarella cheese</div>
+            <div class="mic-footer"><div class="mic-price">₹129</div><div class="mic-orders">88 orders</div></div>
+            <div class="mic-actions">
+              <div class="mic-btn" onclick="showToast('✏️ Editing')">✏️ Edit</div>
+              <div class="mic-btn del">🗑 Delete</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ORDER HISTORY -->
+    <div class="section" id="sec-orders-history">
+      <div class="mini-stats">
+        <div class="mini-stat"><div class="ms-icon si-g">✅</div><div><div class="ms-val">1,840</div><div class="ms-lbl">Delivered This Month</div></div></div>
+        <div class="mini-stat"><div class="ms-icon" style="background:var(--red-light)">❌</div><div><div class="ms-val">32</div><div class="ms-lbl">Cancelled</div></div></div>
+        <div class="mini-stat"><div class="ms-icon si-b">💰</div><div><div class="ms-val">₹3.8L</div><div class="ms-lbl">Revenue This Month</div></div></div>
+      </div>
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">📦 Order History</div>
+          <div class="table-actions">
+            <select class="t-btn" style="color:var(--text2)"><option>All Time</option><option>Today</option><option>This Week</option><option>This Month</option></select>
+            <button class="t-btn primary" onclick="showToast('📥 Exporting...')">Export CSV</button>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Amount</th><th>Commission</th><th>Earning</th><th>Date</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>#FR-294821</td><td>Arjun Shah</td><td>Margherita × 2, Wings × 1</td><td>₹847</td><td>₹152</td><td style="color:var(--green);font-weight:600">₹695</td><td>Today</td><td><span class="pill p-green">✓ Delivered</span></td></tr>
+            <tr><td>#FR-294820</td><td>Priya Mehta</td><td>4 Cheese Pizza × 1, Soup × 1</td><td>₹498</td><td>₹90</td><td style="color:var(--green);font-weight:600">₹408</td><td>Today</td><td><span class="pill p-green">✓ Delivered</span></td></tr>
+            <tr><td>#FR-294819</td><td>Rahul Patel</td><td>Pepperoni × 1, Coke × 2</td><td>₹547</td><td>₹98</td><td style="color:var(--green);font-weight:600">₹449</td><td>Today</td><td><span class="pill p-green">✓ Delivered</span></td></tr>
+            <tr><td>#FR-294818</td><td>Dev Kothari</td><td>Veggie Supreme × 1</td><td>₹349</td><td>—</td><td style="color:var(--red);font-weight:600">—</td><td>Today</td><td><span class="pill p-red">✕ Cancelled</span></td></tr>
+            <tr><td>#FR-294817</td><td>Sneha Joshi</td><td>BBQ Pizza × 2, Wings × 1</td><td>₹1,047</td><td>₹188</td><td style="color:var(--green);font-weight:600">₹859</td><td>Yesterday</td><td><span class="pill p-green">✓ Delivered</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- REVIEWS -->
+    <div class="section" id="sec-reviews">
+      <div class="mini-stats">
+        <div class="mini-stat"><div class="ms-icon si-b">⭐</div><div><div class="ms-val">4.8</div><div class="ms-lbl">Average Rating</div></div></div>
+        <div class="mini-stat"><div class="ms-icon si-g">💬</div><div><div class="ms-val">2,340</div><div class="ms-lbl">Total Reviews</div></div></div>
+        <div class="mini-stat"><div class="ms-icon si-o">📩</div><div><div class="ms-val">24</div><div class="ms-lbl">Unanswered</div></div></div>
+      </div>
+      <div class="review-list">
+        <div class="review-card">
+          <div class="review-header">
+            <div class="reviewer"><div class="reviewer-avatar">😊</div><div><div class="reviewer-name">Arjun Shah</div><div class="review-date">Today, 2:14 PM</div></div></div>
+            <div style="text-align:right"><div class="review-stars">★★★★★</div><div style="font-size:0.68rem;color:var(--muted)">5.0 / 5.0</div></div>
+          </div>
+          <p class="review-text">Absolutely loved the BBQ Chicken Pizza! The crust was perfectly crispy and the toppings were fresh. Delivery was super quick too. Will definitely order again! 🍕</p>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="review-items"><span class="review-item-tag">BBQ Chicken Pizza</span><span class="review-item-tag">Crispy Fries</span></div>
+            <button class="reply-btn" onclick="showToast('💬 Reply sent!')">↩ Reply</button>
+          </div>
+        </div>
+        <div class="review-card">
+          <div class="review-header">
+            <div class="reviewer"><div class="reviewer-avatar">😊</div><div><div class="reviewer-name">Priya Mehta</div><div class="review-date">Yesterday, 7:42 PM</div></div></div>
+            <div style="text-align:right"><div class="review-stars">★★★★☆</div><div style="font-size:0.68rem;color:var(--muted)">4.0 / 5.0</div></div>
+          </div>
+          <p class="review-text">Good food overall! The Margherita was classic and tasty. Delivery took a bit longer than expected but the food was still warm. Packaging was also great.</p>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="review-items"><span class="review-item-tag">Margherita Classic</span></div>
+            <button class="reply-btn" onclick="showToast('💬 Reply sent!')">↩ Reply</button>
+          </div>
+        </div>
+        <div class="review-card" style="border-color:rgba(220,38,38,0.2);background:rgba(220,38,38,0.01)">
+          <div class="review-header">
+            <div class="reviewer"><div class="reviewer-avatar">😊</div><div><div class="reviewer-name">Dev Kothari</div><div class="review-date">2 days ago</div></div></div>
+            <div style="text-align:right"><div class="review-stars" style="color:var(--red)">★★☆☆☆</div><div style="font-size:0.68rem;color:var(--muted)">2.0 / 5.0</div></div>
+          </div>
+          <p class="review-text">Pizza was cold and arrived late. The garlic bread was soggy. Expected better for the price. Hope the quality improves next time.</p>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="review-items"><span class="review-item-tag">Pepperoni Pizza</span><span class="review-item-tag">Garlic Bread</span></div>
+            <button class="reply-btn" style="border-color:var(--red);color:var(--red)" onclick="showToast('💬 Reply sent — addressing the concern!')">↩ Respond</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EARNINGS -->
+    <div class="section" id="sec-earnings">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-top"><div class="stat-icon-wrap si-g">💰</div><span class="stat-trend trend-up">↑ 18%</span></div><div class="stat-value">₹3.8L</div><div class="stat-label">This Month Earnings</div></div>
+        <div class="stat-card"><div class="stat-top"><div class="stat-icon-wrap si-b">📊</div><span class="stat-trend trend-down">18%</span></div><div class="stat-value">₹68,400</div><div class="stat-label">Commission Paid</div></div>
+        <div class="stat-card"><div class="stat-top"><div class="stat-icon-wrap si-o">💸</div></div><div class="stat-value">₹3,11,600</div><div class="stat-label">Net Payout</div></div>
+        <div class="stat-card"><div class="stat-top"><div class="stat-icon-wrap" style="background:rgba(124,58,237,0.08)">📅</div></div><div class="stat-value">June 10</div><div class="stat-label">Next Payout Date</div></div>
+      </div>
+      <div class="table-card">
+        <div class="table-header"><div class="table-title">💰 Payout History</div><button class="t-btn primary" onclick="showToast('📥 Downloading...')">Download</button></div>
+        <table>
+          <thead><tr><th>Period</th><th>Gross Revenue</th><th>Commission (18%)</th><th>Net Payout</th><th>Payment Date</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>June 1–6, 2026</td><td>₹1,12,400</td><td>₹20,232</td><td style="font-weight:700;color:var(--green)">₹92,168</td><td>June 10, 2026</td><td><span class="pill p-yellow">⏳ Upcoming</span></td></tr>
+            <tr><td>May 2026</td><td>₹3,84,200</td><td>₹69,156</td><td style="font-weight:700;color:var(--green)">₹3,15,044</td><td>June 1, 2026</td><td><span class="pill p-green">✓ Paid</span></td></tr>
+            <tr><td>April 2026</td><td>₹3,12,800</td><td>₹56,304</td><td style="font-weight:700;color:var(--green)">₹2,56,496</td><td>May 1, 2026</td><td><span class="pill p-green">✓ Paid</span></td></tr>
+            <tr><td>March 2026</td><td>₹2,94,600</td><td>₹53,028</td><td style="font-weight:700;color:var(--green)">₹2,41,572</td><td>April 1, 2026</td><td><span class="pill p-green">✓ Paid</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="section" id="sec-settings">
+      <div class="settings-grid">
+        <div class="settings-card">
+          <div class="settings-title">🍽️ Restaurant Info</div>
+          <div class="form-group"><label class="form-label">Restaurant Name</label><input class="form-input" type="text" value="Pizza Palace"/></div>
+          <div class="form-group"><label class="form-label">Description</label><textarea class="form-input">Authentic Italian pizza and pasta in the heart of Surat. Fresh ingredients, hand-tossed dough, woodfire baked.</textarea></div>
+          <div class="form-group"><label class="form-label">Cuisine Type</label><select class="form-input"><option selected>Italian</option><option>Indian</option><option>Chinese</option></select></div>
+          <div class="form-group"><label class="form-label">Address</label><input class="form-input" type="text" value="15, MG Road, Near Central Mall, Surat — 395003"/></div>
+          <div class="form-group"><label class="form-label">Phone</label><input class="form-input" type="text" value="+91 98765 43210"/></div>
+          <button class="save-btn" onclick="showToast('✅ Restaurant info saved!')">Save Changes</button>
+        </div>
+        <div>
+          <div class="settings-card" style="margin-bottom:14px">
+            <div class="settings-title">⏰ Business Hours</div>
+            <div class="hours-row"><div class="hours-day">Monday</div><div class="hours-times"><input class="hours-input" type="time" value="09:00"/> to <input class="hours-input" type="time" value="23:00"/></div></div>
+            <div class="hours-row"><div class="hours-day">Tuesday</div><div class="hours-times"><input class="hours-input" type="time" value="09:00"/> to <input class="hours-input" type="time" value="23:00"/></div></div>
+            <div class="hours-row"><div class="hours-day">Wednesday</div><div class="hours-times"><input class="hours-input" type="time" value="09:00"/> to <input class="hours-input" type="time" value="23:00"/></div></div>
+            <div class="hours-row"><div class="hours-day">Thursday</div><div class="hours-times"><input class="hours-input" type="time" value="09:00"/> to <input class="hours-input" type="time" value="23:00"/></div></div>
+            <div class="hours-row"><div class="hours-day">Friday</div><div class="hours-times"><input class="hours-input" type="time" value="09:00"/> to <input class="hours-input" type="time" value="00:00"/></div></div>
+            <div class="hours-row"><div class="hours-day">Saturday</div><div class="hours-times"><input class="hours-input" type="time" value="10:00"/> to <input class="hours-input" type="time" value="00:00"/></div></div>
+            <div class="hours-row"><div class="hours-day">Sunday</div><div class="hours-times"><input class="hours-input" type="time" value="10:00"/> to <input class="hours-input" type="time" value="22:00"/></div></div>
+            <button class="save-btn" style="margin-top:14px" onclick="showToast('✅ Hours saved!')">Save Hours</button>
+          </div>
+          <div class="settings-card">
+            <div class="settings-title">🏦 Bank Details</div>
+            <div class="form-group"><label class="form-label">Account Holder Name</label><input class="form-input" type="text" value="Rahul Mehta"/></div>
+            <div class="form-group"><label class="form-label">Account Number</label><input class="form-input" type="text" value="••••••••4821"/></div>
+            <div class="form-group"><label class="form-label">IFSC Code</label><input class="form-input" type="text" value="SBIN0001234"/></div>
+            <div class="form-group"><label class="form-label">UPI ID</label><input class="form-input" type="text" value="rahul@sbi"/></div>
+            <button class="save-btn" onclick="showToast('✅ Bank details saved!')">Save Details</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ADD ITEM MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-title">🍽️ Add New Menu Item</div>
+    <div class="modal-sub">Fill details to add a new item to your menu</div>
+
+    <div style="margin-bottom:12px">
+      <label class="form-label">Choose Emoji</label>
+      <div class="emoji-grid">
+        <div class="emoji-opt selected" onclick="selectEmoji(this)">🍕</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">🍝</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">🍗</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">🥗</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">🍟</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">🥤</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">🍰</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">🍔</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">🧀</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">🍜</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">🥣</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">🍱</div>
+      </div>
+    </div>
+
+    <label class="form-label">Item Name</label>
+    <input class="form-input" type="text" placeholder="e.g. BBQ Chicken Pizza" style="margin-bottom:12px"/>
+
+    <label class="form-label">Description</label>
+    <input class="form-input" type="text" placeholder="Short description of the item" style="margin-bottom:12px"/>
+
+    <div class="modal-row" style="margin-bottom:12px">
+      <div>
+        <label class="form-label">Price (₹)</label>
+        <input class="form-input" type="text" placeholder="399"/>
+      </div>
+      <div>
+        <label class="form-label">Original Price (₹)</label>
+        <input class="form-input" type="text" placeholder="449 (optional)"/>
+      </div>
+    </div>
+
+    <div class="modal-row" style="margin-bottom:12px">
+      <div>
+        <label class="form-label">Category</label>
+        <select class="form-input"><option>Starters</option><option>Pizzas</option><option>Pastas</option><option>Sides</option><option>Drinks</option><option>Desserts</option></select>
+      </div>
+      <div>
+        <label class="form-label">Type</label>
+        <select class="form-input"><option>Veg</option><option>Non-Veg</option></select>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:14px;margin-bottom:4px">
+      <label style="display:flex;align-items:center;gap:6px;font-size:0.78rem;cursor:pointer"><input type="checkbox" style="accent-color:var(--accent)"/> Bestseller</label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:0.78rem;cursor:pointer"><input type="checkbox" style="accent-color:var(--accent)"/> Spicy 🌶</label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:0.78rem;cursor:pointer"><input type="checkbox" style="accent-color:var(--accent)" checked/> Available</label>
+    </div>
+
+    <div class="modal-actions">
+      <button class="m-btn m-ghost" onclick="closeModal()">Cancel</button>
+      <button class="m-btn m-primary" onclick="closeModal();showToast('✅ New item added to menu!')">Add to Menu</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><span id="toast-msg"></span></div>
+
+<script>
+  const meta = {
+    dashboard:       { title: 'Dashboard',      sub: 'Monday, June 6 2026 · Good morning, Rahul 🌅' },
+    'live-orders':   { title: 'Live Orders 🔴', sub: '3 orders need your attention right now' },
+    menu:            { title: 'Menu Manager',   sub: 'Manage your menu items, pricing & availability' },
+    'orders-history':{ title: 'Order History',  sub: 'Track all past orders and revenue' },
+    reviews:         { title: 'Reviews',        sub: '24 reviews need a response' },
+    earnings:        { title: 'Earnings',       sub: 'Track your revenue, commission & payouts' },
+    settings:        { title: 'Settings',       sub: 'Manage your restaurant profile & preferences' },
+  };
+
+  function showSection(id, navEl) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('sec-' + id)?.classList.add('active');
+    if (navEl) navEl.classList.add('active');
+    const m = meta[id] || {};
+    document.getElementById('page-title').textContent = m.title || id;
+    document.getElementById('page-sub').textContent = m.sub || '';
+  }
+
+  let isOpen = true;
+  function toggleRestaurant() {
+    isOpen = !isOpen;
+    const tog = document.getElementById('rest-toggle');
+    const lbl = document.getElementById('rest-label');
+    tog.className = 'toggle ' + (isOpen ? 'on' : 'off');
+    lbl.className = 'open-label ' + (isOpen ? 'on' : 'off');
+    lbl.textContent = isOpen ? 'Open' : 'Closed';
+    showToast(isOpen ? '✅ Restaurant is now Open!' : '🔴 Restaurant is now Closed');
+  }
+
+  function toggleAvail(btn) {
+    const isOn = btn.classList.contains('on');
+    btn.className = 'avail-switch ' + (isOn ? 'off' : 'on');
+    const card = btn.closest('.menu-item-card');
+    if (isOn) {
+      card.classList.add('unavailable');
+      showToast('🔴 Item marked unavailable');
+    } else {
+      card.classList.remove('unavailable');
+      showToast('✅ Item marked available');
+    }
+  }
+
+  function filterMenu(type, btn) {
+    document.querySelectorAll('.t-btn').forEach(b => b.classList.remove('primary'));
+    btn.classList.add('primary');
+    document.querySelectorAll('.menu-item-card').forEach(card => {
+      card.style.display = (type === 'all' || card.dataset.type === type) ? '' : 'none';
+    });
+  }
+
+  function selectEmoji(el) {
+    document.querySelectorAll('.emoji-opt').forEach(e => e.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  // Bar chart
+  const weekD  = [{l:'Mon',v:14200},{l:'Tue',v:11800},{l:'Wed',v:18600},{l:'Thu',v:16400},{l:'Fri',v:22000},{l:'Sat',v:24000},{l:'Sun',v:16400}];
+  const monthD = [{l:'W1',v:72000},{l:'W2',v:88000},{l:'W3',v:96000},{l:'W4',v:112000}];
+
+  function renderBar(data) {
+    const max = Math.max(...data.map(d => d.v));
+    document.getElementById('owner-bar').innerHTML = data.map(d => {
+      const pct = (d.v/max)*100;
+      const fmt = '₹'+(d.v/1000).toFixed(0)+'K';
+      const cls = d.v === max ? 'ba' : 'bm';
+      return `<div class="bar-wrap"><div class="bar ${cls}" style="height:${pct}%" data-val="${fmt}"></div><div class="bar-lbl">${d.l}</div></div>`;
+    }).join('');
+  }
+
+  function switchBar(btn, period) {
+    document.querySelectorAll('.c-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderBar(period === 'week' ? weekD : monthD);
+  }
+
+  function showToast(msg, dur = 2200) {
+    const t = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('show'), dur);
+  }
+
+  function openModal() { document.getElementById('modal-overlay').classList.add('show'); }
+  function closeModal(e) {
+    if (!e || e.target === document.getElementById('modal-overlay'))
+      document.getElementById('modal-overlay').classList.remove('show');
+  }
+
+  renderBar(weekD);
+</script>
+</body>
+</html>
