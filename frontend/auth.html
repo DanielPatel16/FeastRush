@@ -1,1127 +1,1199 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>FeastRush — Login / Register</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-<style>
-  :root {
-    --bg: #0d0d0d;
-    --surface: #161616;
-    --card: #1c1c1c;
-    --border: #2a2a2a;
-    --accent: #ff4d00;
-    --accent2: #ffb800;
-    --text: #f0ede8;
-    --muted: #7a7672;
-    --error: #ff4d4d;
-    --success: #00c97a;
-    --radius: 16px;
-  }
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    overflow: auto;
-  }
-
-  /* NOISE */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 999;
-    opacity: 0.4;
-  }
-
-  /* LEFT PANEL */
-  .left-panel {
-    width: 45%;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 48px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .left-panel::before {
-    content: '';
-    position: absolute;
-    bottom: -120px;
-    left: -120px;
-    width: 500px;
-    height: 500px;
-    background: radial-gradient(circle, rgba(255,77,0,0.13) 0%, transparent 70%);
-    pointer-events: none;
-  }
-
-  .left-panel::after {
-    content: '';
-    position: absolute;
-    top: -80px;
-    right: -80px;
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, rgba(255,184,0,0.07) 0%, transparent 70%);
-    pointer-events: none;
-  }
-
-  .logo {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 1.7rem;
-    letter-spacing: -1px;
-    text-decoration: none;
-    color: var(--text);
-  }
-
-  .logo span { color: var(--accent); }
-
-  .left-content { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 40px 0; }
-
-  .left-content h2 {
-    font-family: 'Syne', sans-serif;
-    font-size: clamp(2.2rem, 3vw, 3.2rem);
-    font-weight: 800;
-    letter-spacing: -1.5px;
-    line-height: 1.1;
-    margin-bottom: 20px;
-  }
-
-  .left-content h2 span { color: var(--accent); }
-
-  .left-content p {
-    color: var(--muted);
-    font-size: 0.95rem;
-    line-height: 1.7;
-    max-width: 340px;
-    margin-bottom: 40px;
-  }
-
-  .feature-list { display: flex; flex-direction: column; gap: 16px; }
-
-  .feature-item {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 14px 18px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    transition: border-color 0.2s;
-  }
-
-  .feature-item:hover { border-color: rgba(255,77,0,0.3); }
-
-  .feature-icon {
-    font-size: 1.4rem;
-    width: 44px;
-    height: 44px;
-    background: var(--surface);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .feature-text strong { display: block; font-size: 0.88rem; font-weight: 600; margin-bottom: 2px; }
-  .feature-text small { color: var(--muted); font-size: 0.75rem; }
-
-  .left-footer {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding-top: 32px;
-    border-top: 1px solid var(--border);
-  }
-
-  .avatars { display: flex; }
-
-  .avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 2px solid var(--surface);
-    font-size: 0.85rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: -8px;
-  }
-
-  .avatar:first-child { margin-left: 0; }
-  .av1 { background: #3d1500; }
-  .av2 { background: #003d20; }
-  .av3 { background: #1a1500; }
-  .av4 { background: #0a001a; }
-
-  .left-footer-text small { color: var(--muted); font-size: 0.78rem; }
-  .left-footer-text strong { display: block; font-size: 0.82rem; }
-
-  /* RIGHT PANEL */
-  .right-panel {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 48px 60px;
-    overflow-y: auto;
-  }
-
-  .auth-box {
-    width: 100%;
-    max-width: 420px;
-    animation: fadeUp 0.5s ease both;
-  }
-
-  /* TABS */
-  .auth-tabs {
-    display: flex;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 5px;
-    margin-bottom: 32px;
-  }
-
-  .tab-btn {
-    flex: 1;
-    padding: 11px;
-    background: transparent;
-    border: none;
-    border-radius: 10px;
-    color: var(--muted);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.25s;
-  }
-
-  .tab-btn.active {
-    background: var(--accent);
-    color: #fff;
-    box-shadow: 0 4px 16px rgba(255,77,0,0.3);
-  }
-
-  /* ROLE SELECTOR */
-  .role-selector {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 24px;
-  }
-
-  .role-btn {
-    flex: 1;
-    padding: 12px 8px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    color: var(--muted);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.8rem;
-    font-weight: 500;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.2s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .role-btn span { font-size: 1.3rem; }
-
-  .role-btn.active {
-    border-color: var(--accent);
-    background: rgba(255,77,0,0.08);
-    color: var(--text);
-  }
-
-  /* FORM */
-  .form-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 1.6rem;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    margin-bottom: 6px;
-  }
-
-  .form-subtitle {
-    color: var(--muted);
-    font-size: 0.85rem;
-    margin-bottom: 28px;
-  }
-
-  .form-group { margin-bottom: 18px; }
-
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-
-  label {
-    display: block;
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: var(--muted);
-    margin-bottom: 8px;
-    letter-spacing: 0.3px;
-  }
-
-  .input-wrap { position: relative; }
-
-  .input-icon {
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 1rem;
-    pointer-events: none;
-  }
-
-  input[type="text"],
-  input[type="email"],
-  input[type="password"],
-  input[type="tel"],
-  select {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 13px 14px 13px 42px;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.9rem;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    appearance: none;
-  }
-
-  input:focus, select:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(255,77,0,0.1);
-  }
-
-  input::placeholder { color: var(--muted); }
-
-  input.error { border-color: var(--error); }
-  input.success { border-color: var(--success); }
-
-  .eye-btn {
-    position: absolute;
-    right: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    color: var(--muted);
-    cursor: pointer;
-    font-size: 1rem;
-    padding: 0;
-    transition: color 0.2s;
-  }
-
-  .eye-btn:hover { color: var(--text); }
-
-  .field-error {
-    color: var(--error);
-    font-size: 0.73rem;
-    margin-top: 5px;
-    display: none;
-  }
-
-  .field-error.show { display: block; }
-
-  /* PASSWORD STRENGTH */
-  .strength-bar {
-    display: flex;
-    gap: 4px;
-    margin-top: 8px;
-  }
-
-  .strength-seg {
-    flex: 1;
-    height: 3px;
-    background: var(--border);
-    border-radius: 2px;
-    transition: background 0.3s;
-  }
-
-  .strength-label {
-    font-size: 0.72rem;
-    color: var(--muted);
-    margin-top: 4px;
-  }
-
-  /* CHECKBOX */
-  .checkbox-wrap {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-
-  .checkbox-wrap input[type="checkbox"] {
-    width: 17px;
-    height: 17px;
-    flex-shrink: 0;
-    accent-color: var(--accent);
-    margin-top: 2px;
-    padding: 0;
-  }
-
-  .checkbox-wrap label {
-    margin: 0;
-    font-size: 0.8rem;
-    color: var(--muted);
-    line-height: 1.5;
-    cursor: pointer;
-  }
-
-  .checkbox-wrap label a { color: var(--accent); text-decoration: none; }
-
-  /* DIVIDER */
-  .divider {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 22px 0;
-    color: var(--muted);
-    font-size: 0.78rem;
-  }
-
-  .divider::before, .divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
-  /* SOCIAL BTNS */
-  .social-btns { display: flex; gap: 10px; margin-bottom: 22px; }
-
-  .social-btn {
-    flex: 1;
-    padding: 11px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.82rem;
-    font-weight: 500;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: all 0.2s;
-  }
-
-  .social-btn:hover {
-    border-color: var(--muted);
-    background: var(--card);
-  }
-
-  /* SUBMIT BTN */
-  .submit-btn {
-    width: 100%;
-    padding: 14px;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: 12px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 18px;
-  }
-
-  .submit-btn:hover {
-    background: #ff6020;
-    transform: translateY(-1px);
-    box-shadow: 0 8px 24px rgba(255,77,0,0.35);
-  }
-
-  .submit-btn:active { transform: translateY(0); }
-
-  .submit-btn.loading { opacity: 0.7; pointer-events: none; }
-
-  /* FORGOT */
-  .forgot-link {
-    display: block;
-    text-align: right;
-    color: var(--accent);
-    font-size: 0.78rem;
-    text-decoration: none;
-    margin-top: -10px;
-    margin-bottom: 20px;
-    transition: opacity 0.2s;
-  }
-
-  .forgot-link:hover { opacity: 0.7; }
-
-  /* SWITCH */
-  .switch-text {
-    text-align: center;
-    color: var(--muted);
-    font-size: 0.82rem;
-  }
-
-  .switch-text a {
-    color: var(--accent);
-    text-decoration: none;
-    font-weight: 500;
-  }
-
-  /* SUCCESS STATE */
-  .success-state {
-    display: none;
-    text-align: center;
-    padding: 40px 0;
-    animation: fadeUp 0.4s ease both;
-  }
-
-  .success-state.show { display: block; }
-
-  .success-circle {
-    width: 72px;
-    height: 72px;
-    background: rgba(0,201,122,0.12);
-    border: 2px solid var(--success);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    margin: 0 auto 20px;
-    animation: pop 0.4s ease both;
-  }
-
-  .success-state h3 {
-    font-family: 'Syne', sans-serif;
-    font-size: 1.4rem;
-    font-weight: 800;
-    margin-bottom: 8px;
-  }
-
-  .success-state p { color: var(--muted); font-size: 0.88rem; margin-bottom: 28px; }
-
-  @keyframes pop {
-    0% { transform: scale(0.5); opacity: 0; }
-    70% { transform: scale(1.1); }
-    100% { transform: scale(1); opacity: 1; }
-  }
-
-  /* SELECT ICON FIX */
-  .select-wrap { position: relative; }
-  .select-wrap::after {
-    content: '▾';
-    position: absolute;
-    right: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    pointer-events: none;
-    color: var(--muted);
-    font-size: 0.8rem;
-  }
-
-  select { padding-right: 36px; }
-  select option { background: var(--card); }
-
-  /* PANEL TOGGLE */
-  .form-panel { display: none; }
-  .form-panel.active { display: block; animation: fadeUp 0.35s ease both; }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* SCROLLBAR */
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FeastRush — Login / Register</title>
+  <link rel="stylesheet" href="style.css" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap"
+    rel="stylesheet" />
+  <style>
+    body {
+      display: flex;
+      overflow: auto;
+    }
+
+    /* LEFT PANEL */
+    .left-panel {
+      width: 45%;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 48px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .left-panel::before {
+      content: '';
+      position: absolute;
+      bottom: -120px;
+      left: -120px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(255, 77, 0, 0.13) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .left-panel::after {
+      content: '';
+      position: absolute;
+      top: -80px;
+      right: -80px;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(255, 184, 0, 0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .left-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 40px 0;
+    }
+
+    .left-content h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2.2rem, 3vw, 3.2rem);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+
+    .left-content h2 span {
+      color: var(--accent);
+    }
+
+    .left-content p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.7;
+      max-width: 340px;
+      margin-bottom: 40px;
+    }
+
+    .feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      transition: border-color 0.2s;
+    }
+
+    .feature-item:hover {
+      border-color: rgba(255, 77, 0, 0.3);
+    }
+
+    .feature-icon {
+      font-size: 1.4rem;
+      width: 44px;
+      height: 44px;
+      background: var(--surface);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .feature-text strong {
+      display: block;
+      font-size: 0.88rem;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .feature-text small {
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+
+    .left-footer {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-top: 32px;
+      border-top: 1px solid var(--border);
+    }
+
+    .avatars {
+      display: flex;
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid var(--surface);
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: -8px;
+    }
+
+    .avatar:first-child {
+      margin-left: 0;
+    }
+
+    .av1 {
+      background: #3d1500;
+    }
+
+    .av2 {
+      background: #003d20;
+    }
+
+    .av3 {
+      background: #1a1500;
+    }
+
+    .av4 {
+      background: #0a001a;
+    }
+
+    .left-footer-text small {
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .left-footer-text strong {
+      display: block;
+      font-size: 0.82rem;
+    }
+
+    /* RIGHT PANEL */
+    .right-panel {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 60px;
+      overflow-y: auto;
+    }
+
+    .auth-box {
+      width: 100%;
+      max-width: 420px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    /* TABS */
+    .auth-tabs {
+      display: flex;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 5px;
+      margin-bottom: 32px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 11px;
+      background: transparent;
+      border: none;
+      border-radius: 10px;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(255, 77, 0, 0.3);
+    }
+
+    /* ROLE SELECTOR */
+    .role-selector {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .role-btn {
+      flex: 1;
+      padding: 12px 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .role-btn span {
+      font-size: 1.3rem;
+    }
+
+    .role-btn.active {
+      border-color: var(--accent);
+      background: rgba(255, 77, 0, 0.08);
+      color: var(--text);
+    }
+
+    /* FORM */
+    .form-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+
+    .form-subtitle {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 28px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 8px;
+      letter-spacing: 0.3px;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1rem;
+      pointer-events: none;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="tel"],
+    select {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 13px 14px 13px 42px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      appearance: none;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(255, 77, 0, 0.1);
+    }
+
+    input::placeholder {
+      color: var(--muted);
+    }
+
+    input.error {
+      border-color: var(--error);
+    }
+
+    input.success {
+      border-color: var(--success);
+    }
+
+    .eye-btn {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0;
+      transition: color 0.2s;
+    }
+
+    .eye-btn:hover {
+      color: var(--text);
+    }
+
+    .field-error {
+      color: var(--error);
+      font-size: 0.73rem;
+      margin-top: 5px;
+      display: none;
+    }
+
+    .field-error.show {
+      display: block;
+    }
+
+    /* PASSWORD STRENGTH */
+    .strength-bar {
+      display: flex;
+      gap: 4px;
+      margin-top: 8px;
+    }
+
+    .strength-seg {
+      flex: 1;
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      transition: background 0.3s;
+    }
+
+    .strength-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* CHECKBOX */
+    .checkbox-wrap {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .checkbox-wrap input[type="checkbox"] {
+      width: 17px;
+      height: 17px;
+      flex-shrink: 0;
+      accent-color: var(--accent);
+      margin-top: 2px;
+      padding: 0;
+    }
+
+    .checkbox-wrap label {
+      margin: 0;
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.5;
+      cursor: pointer;
+    }
+
+    .checkbox-wrap label a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    /* DIVIDER */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 22px 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* SOCIAL BTNS */
+    .social-btns {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+
+    .social-btn {
+      flex: 1;
+      padding: 11px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .social-btn:hover {
+      border-color: var(--muted);
+      background: var(--card);
+    }
+
+    /* SUBMIT BTN */
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .submit-btn:hover {
+      background: #ff6020;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(255, 77, 0, 0.35);
+    }
+
+    .submit-btn:active {
+      transform: translateY(0);
+    }
+
+    .submit-btn.loading {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    /* FORGOT */
+    .forgot-link {
+      display: block;
+      text-align: right;
+      color: var(--accent);
+      font-size: 0.78rem;
+      text-decoration: none;
+      margin-top: -10px;
+      margin-bottom: 20px;
+      transition: opacity 0.2s;
+    }
+
+    .forgot-link:hover {
+      opacity: 0.7;
+    }
+
+    /* SWITCH */
+    .switch-text {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .switch-text a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    /* SUCCESS STATE */
+    .success-state {
+      display: none;
+      text-align: center;
+      padding: 40px 0;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .success-state.show {
+      display: block;
+    }
+
+    .success-circle {
+      width: 72px;
+      height: 72px;
+      background: rgba(0, 201, 122, 0.12);
+      border: 2px solid var(--success);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      margin: 0 auto 20px;
+      animation: pop 0.4s ease both;
+    }
+
+    .success-state h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .success-state p {
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-bottom: 28px;
+    }
+
+
+    /* SELECT ICON FIX */
+    .select-wrap {
+      position: relative;
+    }
+
+    .select-wrap::after {
+      content: '▾';
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    select {
+      padding-right: 36px;
+    }
+
+    select option {
+      background: var(--card);
+    }
+
+    /* PANEL TOGGLE */
+    .form-panel {
+      display: none;
+    }
+
+    .form-panel.active {
+      display: block;
+      animation: fadeUp 0.35s ease both;
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- LEFT PANEL -->
-<div class="left-panel">
-  <a href="foodie-home.html" class="logo">Feast<span>Rush</span></a>
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <a href="foodie-home.html" class="logo">Feast<span>Rush</span></a>
 
-  <div class="left-content">
-    <h2>Your next<br/>great meal<br/>starts <span>here.</span></h2>
-    <p>Join thousands of food lovers ordering from the best local restaurants — fast, easy, and delicious.</p>
-    <div class="feature-list">
-      <div class="feature-item">
-        <div class="feature-icon">🛵</div>
-        <div class="feature-text">
-          <strong>Lightning Fast Delivery</strong>
-          <small>Average delivery in under 25 minutes</small>
+    <div class="left-content">
+      <h2>Your next<br />great meal<br />starts <span>here.</span></h2>
+      <p>Join thousands of food lovers ordering from the best local restaurants — fast, easy, and delicious.</p>
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-icon">🛵</div>
+          <div class="feature-text">
+            <strong>Lightning Fast Delivery</strong>
+            <small>Average delivery in under 25 minutes</small>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🍽️</div>
+          <div class="feature-text">
+            <strong>1,200+ Restaurants</strong>
+            <small>Every cuisine, every craving covered</small>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🔒</div>
+          <div class="feature-text">
+            <strong>Secure Payments</strong>
+            <small>Razorpay, UPI, cards & cash on delivery</small>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">📍</div>
+          <div class="feature-text">
+            <strong>Live Order Tracking</strong>
+            <small>Watch your food arrive in real time</small>
+          </div>
         </div>
       </div>
-      <div class="feature-item">
-        <div class="feature-icon">🍽️</div>
-        <div class="feature-text">
-          <strong>1,200+ Restaurants</strong>
-          <small>Every cuisine, every craving covered</small>
-        </div>
+    </div>
+
+    <div class="left-footer">
+      <div class="avatars">
+        <div class="avatar av1">😋</div>
+        <div class="avatar av2">🤤</div>
+        <div class="avatar av3">😍</div>
+        <div class="avatar av4">🥰</div>
       </div>
-      <div class="feature-item">
-        <div class="feature-icon">🔒</div>
-        <div class="feature-text">
-          <strong>Secure Payments</strong>
-          <small>Razorpay, UPI, cards & cash on delivery</small>
-        </div>
-      </div>
-      <div class="feature-item">
-        <div class="feature-icon">📍</div>
-        <div class="feature-text">
-          <strong>Live Order Tracking</strong>
-          <small>Watch your food arrive in real time</small>
-        </div>
+      <div class="left-footer-text">
+        <strong>500,000+ happy customers</strong>
+        <small>Join them today — it's free!</small>
       </div>
     </div>
   </div>
 
-  <div class="left-footer">
-    <div class="avatars">
-      <div class="avatar av1">😋</div>
-      <div class="avatar av2">🤤</div>
-      <div class="avatar av3">😍</div>
-      <div class="avatar av4">🥰</div>
-    </div>
-    <div class="left-footer-text">
-      <strong>500,000+ happy customers</strong>
-      <small>Join them today — it's free!</small>
-    </div>
-  </div>
-</div>
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="auth-box">
 
-<!-- RIGHT PANEL -->
-<div class="right-panel">
-  <div class="auth-box">
-
-    <!-- TABS -->
-    <div class="auth-tabs">
-      <button class="tab-btn active" onclick="switchTab('login')">Log In</button>
-      <button class="tab-btn" onclick="switchTab('register')">Create Account</button>
-    </div>
-
-    <!-- ===== LOGIN PANEL ===== -->
-    <div class="form-panel active" id="panel-login">
-      <div class="form-title">Welcome back 👋</div>
-      <div class="form-subtitle">Log in to your FeastRush account</div>
-
-      <!-- ROLE -->
-      <div class="role-selector">
-        <button class="role-btn active" onclick="selectRole(this,'login')">
-          <span>👤</span> Customer
-        </button>
-        <button class="role-btn" onclick="selectRole(this,'login')">
-          <span>🍽️</span> Restaurant
-        </button>
-        <button class="role-btn" onclick="selectRole(this,'login')">
-          <span>🛡️</span> Admin
-        </button>
+      <!-- TABS -->
+      <div class="auth-tabs">
+        <button class="tab-btn active" onclick="switchTab('login')">Log In</button>
+        <button class="tab-btn" onclick="switchTab('register')">Create Account</button>
       </div>
 
-      <!-- SOCIAL -->
-      <div class="social-btns">
-        <button class="social-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-          Google
-        </button>
-        <button class="social-btn">📱 Phone OTP</button>
-      </div>
+      <!-- ===== LOGIN PANEL ===== -->
+      <div class="form-panel active" id="panel-login">
+        <div class="form-title">Welcome back 👋</div>
+        <div class="form-subtitle">Log in to your FeastRush account</div>
 
-      <div class="divider">or continue with email</div>
-
-      <div class="form-group">
-        <label>Email Address</label>
-        <div class="input-wrap">
-          <span class="input-icon">✉️</span>
-          <input type="email" id="login-email" placeholder="you@example.com"/>
+        <!-- ROLE -->
+        <div class="role-selector">
+          <button class="role-btn active" onclick="selectRole(this,'login')">
+            <span>👤</span> Customer
+          </button>
+          <button class="role-btn" onclick="selectRole(this,'login')">
+            <span>🍽️</span> Restaurant
+          </button>
+          <button class="role-btn" onclick="selectRole(this,'login')">
+            <span>🛡️</span> Admin
+          </button>
         </div>
-        <div class="field-error" id="login-email-err">Please enter a valid email</div>
-      </div>
 
-      <div class="form-group">
-        <label>Password</label>
-        <div class="input-wrap">
-          <span class="input-icon">🔑</span>
-          <input type="password" id="login-pass" placeholder="Enter your password"/>
-          <button class="eye-btn" onclick="togglePass('login-pass', this)">👁</button>
+        <!-- SOCIAL -->
+        <div class="social-btns">
+          <button class="social-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24">
+              <path fill="#4285F4"
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+              <path fill="#34A853"
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+              <path fill="#FBBC05"
+                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+              <path fill="#EA4335"
+                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+            </svg>
+            Google
+          </button>
+          <button class="social-btn">📱 Phone OTP</button>
         </div>
-        <div class="field-error" id="login-pass-err">Password is required</div>
-      </div>
 
-      <a href="#" class="forgot-link">Forgot password?</a>
-
-      <button class="submit-btn" onclick="handleLogin()">
-        Log In → 
-      </button>
-
-      <p class="switch-text">Don't have an account? <a onclick="switchTab('register')" href="#">Sign up free</a></p>
-    </div>
-
-    <!-- ===== REGISTER PANEL ===== -->
-    <div class="form-panel" id="panel-register">
-      <div class="form-title">Create account 🚀</div>
-      <div class="form-subtitle">Join FeastRush — free forever</div>
-
-      <!-- ROLE -->
-      <div class="role-selector">
-        <button class="role-btn active" id="reg-role-customer" onclick="selectRole(this,'register')">
-          <span>👤</span> Customer
-        </button>
-        <button class="role-btn" id="reg-role-restaurant" onclick="selectRole(this,'register')">
-          <span>🍽️</span> Restaurant
-        </button>
-      </div>
-
-      <!-- SOCIAL -->
-      <div class="social-btns">
-        <button class="social-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-          Google
-        </button>
-        <button class="social-btn">📱 Phone OTP</button>
-      </div>
-
-      <div class="divider">or fill in the details</div>
-
-      <!-- CUSTOMER FIELDS -->
-      <div id="customer-fields">
-        <div class="form-row">
-          <div class="form-group">
-            <label>First Name</label>
-            <div class="input-wrap">
-              <span class="input-icon">👤</span>
-              <input type="text" id="reg-fname" placeholder="Arjun"/>
-            </div>
-            <div class="field-error" id="reg-fname-err">Required</div>
-          </div>
-          <div class="form-group">
-            <label>Last Name</label>
-            <div class="input-wrap">
-              <span class="input-icon">👤</span>
-              <input type="text" id="reg-lname" placeholder="Shah"/>
-            </div>
-          </div>
-        </div>
+        <div class="divider">or continue with email</div>
 
         <div class="form-group">
           <label>Email Address</label>
           <div class="input-wrap">
             <span class="input-icon">✉️</span>
-            <input type="email" id="reg-email" placeholder="you@example.com"/>
+            <input type="email" id="login-email" placeholder="you@example.com" />
           </div>
-          <div class="field-error" id="reg-email-err">Enter a valid email</div>
+          <div class="field-error" id="login-email-err">Please enter a valid email</div>
         </div>
 
         <div class="form-group">
-          <label>Phone Number</label>
+          <label>Password</label>
           <div class="input-wrap">
-            <span class="input-icon">📱</span>
-            <input type="tel" id="reg-phone" placeholder="+91 98765 43210"/>
+            <span class="input-icon">🔑</span>
+            <input type="password" id="login-pass" placeholder="Enter your password" />
+            <button class="eye-btn" onclick="togglePass('login-pass', this)">👁</button>
           </div>
-          <div class="field-error" id="reg-phone-err">Enter a valid phone number</div>
+          <div class="field-error" id="login-pass-err">Password is required</div>
         </div>
+
+        <a href="#" class="forgot-link">Forgot password?</a>
+
+        <button class="submit-btn" onclick="handleLogin()">
+          Log In →
+        </button>
+
+        <p class="switch-text">Don't have an account? <a onclick="switchTab('register')" href="#">Sign up free</a></p>
       </div>
 
-      <!-- RESTAURANT FIELDS -->
-      <div id="restaurant-fields" style="display:none">
-        <div class="form-group">
-          <label>Restaurant Name</label>
-          <div class="input-wrap">
-            <span class="input-icon">🍽️</span>
-            <input type="text" id="reg-rname" placeholder="Pizza Palace"/>
-          </div>
-          <div class="field-error" id="reg-rname-err">Required</div>
+      <!-- ===== REGISTER PANEL ===== -->
+      <div class="form-panel" id="panel-register">
+        <div class="form-title">Create account 🚀</div>
+        <div class="form-subtitle">Join FeastRush — free forever</div>
+
+        <!-- ROLE -->
+        <div class="role-selector">
+          <button class="role-btn active" id="reg-role-customer" onclick="selectRole(this,'register')">
+            <span>👤</span> Customer
+          </button>
+          <button class="role-btn" id="reg-role-restaurant" onclick="selectRole(this,'register')">
+            <span>🍽️</span> Restaurant
+          </button>
         </div>
 
-        <div class="form-row">
+        <!-- SOCIAL -->
+        <div class="social-btns">
+          <button class="social-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24">
+              <path fill="#4285F4"
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+              <path fill="#34A853"
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+              <path fill="#FBBC05"
+                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+              <path fill="#EA4335"
+                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+            </svg>
+            Google
+          </button>
+          <button class="social-btn">📱 Phone OTP</button>
+        </div>
+
+        <div class="divider">or fill in the details</div>
+
+        <!-- CUSTOMER FIELDS -->
+        <div id="customer-fields">
+          <div class="form-row">
+            <div class="form-group">
+              <label>First Name</label>
+              <div class="input-wrap">
+                <span class="input-icon">👤</span>
+                <input type="text" id="reg-fname" placeholder="Arjun" />
+              </div>
+              <div class="field-error" id="reg-fname-err">Required</div>
+            </div>
+            <div class="form-group">
+              <label>Last Name</label>
+              <div class="input-wrap">
+                <span class="input-icon">👤</span>
+                <input type="text" id="reg-lname" placeholder="Shah" />
+              </div>
+            </div>
+          </div>
+
           <div class="form-group">
-            <label>Owner Name</label>
+            <label>Email Address</label>
             <div class="input-wrap">
-              <span class="input-icon">👤</span>
-              <input type="text" id="reg-owner" placeholder="Rahul Mehta"/>
+              <span class="input-icon">✉️</span>
+              <input type="email" id="reg-email" placeholder="you@example.com" />
             </div>
+            <div class="field-error" id="reg-email-err">Enter a valid email</div>
           </div>
+
           <div class="form-group">
-            <label>Cuisine Type</label>
-            <div class="select-wrap">
-              <span class="input-icon">🍴</span>
-              <select id="reg-cuisine">
-                <option value="">Select...</option>
-                <option>Italian</option>
-                <option>Indian</option>
-                <option>Chinese</option>
-                <option>Mexican</option>
-                <option>American</option>
-                <option>Japanese</option>
-                <option>Other</option>
-              </select>
+            <label>Phone Number</label>
+            <div class="input-wrap">
+              <span class="input-icon">📱</span>
+              <input type="tel" id="reg-phone" placeholder="+91 98765 43210" />
+            </div>
+            <div class="field-error" id="reg-phone-err">Enter a valid phone number</div>
+          </div>
+        </div>
+
+        <!-- RESTAURANT FIELDS -->
+        <div id="restaurant-fields" style="display:none">
+          <div class="form-group">
+            <label>Restaurant Name</label>
+            <div class="input-wrap">
+              <span class="input-icon">🍽️</span>
+              <input type="text" id="reg-rname" placeholder="Pizza Palace" />
+            </div>
+            <div class="field-error" id="reg-rname-err">Required</div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Owner Name</label>
+              <div class="input-wrap">
+                <span class="input-icon">👤</span>
+                <input type="text" id="reg-owner" placeholder="Rahul Mehta" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Cuisine Type</label>
+              <div class="select-wrap">
+                <span class="input-icon">🍴</span>
+                <select id="reg-cuisine">
+                  <option value="">Select...</option>
+                  <option>Italian</option>
+                  <option>Indian</option>
+                  <option>Chinese</option>
+                  <option>Mexican</option>
+                  <option>American</option>
+                  <option>Japanese</option>
+                  <option>Other</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Business Email</label>
+            <div class="input-wrap">
+              <span class="input-icon">✉️</span>
+              <input type="email" id="reg-remail" placeholder="owner@restaurant.com" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Phone Number</label>
+            <div class="input-wrap">
+              <span class="input-icon">📱</span>
+              <input type="tel" id="reg-rphone" placeholder="+91 98765 43210" />
             </div>
           </div>
         </div>
 
+        <!-- SHARED FIELDS -->
         <div class="form-group">
-          <label>Business Email</label>
+          <label>Password</label>
           <div class="input-wrap">
-            <span class="input-icon">✉️</span>
-            <input type="email" id="reg-remail" placeholder="owner@restaurant.com"/>
+            <span class="input-icon">🔑</span>
+            <input type="password" id="reg-pass" placeholder="Create a strong password"
+              oninput="checkStrength(this.value)" />
+            <button class="eye-btn" onclick="togglePass('reg-pass', this)">👁</button>
           </div>
+          <div class="strength-bar">
+            <div class="strength-seg" id="s1"></div>
+            <div class="strength-seg" id="s2"></div>
+            <div class="strength-seg" id="s3"></div>
+            <div class="strength-seg" id="s4"></div>
+          </div>
+          <div class="strength-label" id="strength-label"></div>
+          <div class="field-error" id="reg-pass-err">Password must be at least 6 characters</div>
         </div>
 
         <div class="form-group">
-          <label>Phone Number</label>
+          <label>Confirm Password</label>
           <div class="input-wrap">
-            <span class="input-icon">📱</span>
-            <input type="tel" id="reg-rphone" placeholder="+91 98765 43210"/>
+            <span class="input-icon">🔑</span>
+            <input type="password" id="reg-cpass" placeholder="Re-enter your password" />
+            <button class="eye-btn" onclick="togglePass('reg-cpass', this)">👁</button>
           </div>
+          <div class="field-error" id="reg-cpass-err">Passwords do not match</div>
         </div>
+
+        <div class="checkbox-wrap">
+          <input type="checkbox" id="agree-terms" />
+          <label for="agree-terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a> of
+            FeastRush</label>
+        </div>
+
+        <button class="submit-btn" onclick="handleRegister()">
+          Create Account 🚀
+        </button>
+
+        <p class="switch-text">Already have an account? <a onclick="switchTab('login')" href="#">Log in</a></p>
       </div>
 
-      <!-- SHARED FIELDS -->
-      <div class="form-group">
-        <label>Password</label>
-        <div class="input-wrap">
-          <span class="input-icon">🔑</span>
-          <input type="password" id="reg-pass" placeholder="Create a strong password" oninput="checkStrength(this.value)"/>
-          <button class="eye-btn" onclick="togglePass('reg-pass', this)">👁</button>
-        </div>
-        <div class="strength-bar">
-          <div class="strength-seg" id="s1"></div>
-          <div class="strength-seg" id="s2"></div>
-          <div class="strength-seg" id="s3"></div>
-          <div class="strength-seg" id="s4"></div>
-        </div>
-        <div class="strength-label" id="strength-label"></div>
-        <div class="field-error" id="reg-pass-err">Password must be at least 6 characters</div>
+      <!-- SUCCESS STATE -->
+      <div class="success-state" id="success-state">
+        <div class="success-circle">✅</div>
+        <h3>You're in!</h3>
+        <p id="success-msg">Welcome to FeastRush! Redirecting to your dashboard...</p>
+        <button class="submit-btn" onclick="location.href='foodie-home.html'">Go to Homepage →</button>
       </div>
 
-      <div class="form-group">
-        <label>Confirm Password</label>
-        <div class="input-wrap">
-          <span class="input-icon">🔑</span>
-          <input type="password" id="reg-cpass" placeholder="Re-enter your password"/>
-          <button class="eye-btn" onclick="togglePass('reg-cpass', this)">👁</button>
-        </div>
-        <div class="field-error" id="reg-cpass-err">Passwords do not match</div>
-      </div>
-
-      <div class="checkbox-wrap">
-        <input type="checkbox" id="agree-terms"/>
-        <label for="agree-terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a> of FeastRush</label>
-      </div>
-
-      <button class="submit-btn" onclick="handleRegister()">
-        Create Account 🚀
-      </button>
-
-      <p class="switch-text">Already have an account? <a onclick="switchTab('login')" href="#">Log in</a></p>
     </div>
-
-    <!-- SUCCESS STATE -->
-    <div class="success-state" id="success-state">
-      <div class="success-circle">✅</div>
-      <h3>You're in!</h3>
-      <p id="success-msg">Welcome to FeastRush! Redirecting to your dashboard...</p>
-      <button class="submit-btn" onclick="location.href='foodie-home.html'">Go to Homepage →</button>
-    </div>
-
   </div>
-</div>
 
-<script>
-  // ─── CONFIG ───────────────────────────────────────────────
-  const API = 'http://localhost:5000/api';   // backend base URL
+  <script>
+    // ─── CONFIG ───────────────────────────────────────────────
+    const API = 'http://localhost:5000/api';   // backend base URL
 
-  // ─── STATE ────────────────────────────────────────────────
-  let currentTab     = 'login';
-  let currentRegRole = 'customer';
-  let loginRole      = 'user';   // tracks role selected on login tab
+    // ─── STATE ────────────────────────────────────────────────
+    let currentTab = 'login';
+    let currentRegRole = 'customer';
+    let loginRole = 'user';   // tracks role selected on login tab
 
-  // ─── ON PAGE LOAD: redirect if already logged in ──────────
-  window.addEventListener('DOMContentLoaded', () => {
-    const token = localStorage.getItem('feastrush_token');
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        redirectByRole(payload.role || 'user');
-      } catch {
-        localStorage.clear();
+    // ─── ON PAGE LOAD: redirect if already logged in ──────────
+    window.addEventListener('DOMContentLoaded', () => {
+      const token = localStorage.getItem('feastrush_token');
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          redirectByRole(payload.role || 'user');
+        } catch {
+          localStorage.clear();
+        }
+      }
+    });
+
+    // ─── REDIRECT BASED ON ROLE ───────────────────────────────
+    function redirectByRole(role) {
+      if (role === 'admin') window.location.href = 'admin.html';
+      else if (role === 'owner') window.location.href = 'owner.html';
+      else window.location.href = 'restaurants.html';
+    }
+
+    // ─── TAB SWITCH ───────────────────────────────────────────
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab-btn').forEach((b, i) => {
+        b.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'));
+      });
+      document.getElementById('panel-login').classList.toggle('active', tab === 'login');
+      document.getElementById('panel-register').classList.toggle('active', tab === 'register');
+      document.getElementById('success-state').classList.remove('show');
+      clearAllErrors();
+    }
+
+    // ─── ROLE SELECTOR ────────────────────────────────────────
+    function selectRole(btn, panel) {
+      btn.closest('.role-selector').querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      if (panel === 'register') {
+        currentRegRole = btn.innerText.trim().toLowerCase().includes('restaurant') ? 'restaurant' : 'customer';
+        document.getElementById('customer-fields').style.display = currentRegRole === 'customer' ? 'block' : 'none';
+        document.getElementById('restaurant-fields').style.display = currentRegRole === 'restaurant' ? 'block' : 'none';
+      } else {
+        // Login panel role
+        const txt = btn.innerText.trim().toLowerCase();
+        if (txt.includes('restaurant')) loginRole = 'owner';
+        else if (txt.includes('admin')) loginRole = 'admin';
+        else loginRole = 'user';
       }
     }
-  });
 
-  // ─── REDIRECT BASED ON ROLE ───────────────────────────────
-  function redirectByRole(role) {
-    if (role === 'admin')       window.location.href = 'admin.html';
-    else if (role === 'owner')  window.location.href = 'owner.html';
-    else                        window.location.href = 'restaurants.html';
-  }
-
-  // ─── TAB SWITCH ───────────────────────────────────────────
-  function switchTab(tab) {
-    currentTab = tab;
-    document.querySelectorAll('.tab-btn').forEach((b, i) => {
-      b.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'));
-    });
-    document.getElementById('panel-login').classList.toggle('active', tab === 'login');
-    document.getElementById('panel-register').classList.toggle('active', tab === 'register');
-    document.getElementById('success-state').classList.remove('show');
-    clearAllErrors();
-  }
-
-  // ─── ROLE SELECTOR ────────────────────────────────────────
-  function selectRole(btn, panel) {
-    btn.closest('.role-selector').querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    if (panel === 'register') {
-      currentRegRole = btn.innerText.trim().toLowerCase().includes('restaurant') ? 'restaurant' : 'customer';
-      document.getElementById('customer-fields').style.display   = currentRegRole === 'customer'   ? 'block' : 'none';
-      document.getElementById('restaurant-fields').style.display = currentRegRole === 'restaurant' ? 'block' : 'none';
-    } else {
-      // Login panel role
-      const txt = btn.innerText.trim().toLowerCase();
-      if (txt.includes('restaurant')) loginRole = 'owner';
-      else if (txt.includes('admin')) loginRole = 'admin';
-      else loginRole = 'user';
+    // ─── PASSWORD TOGGLE ──────────────────────────────────────
+    function togglePass(id, btn) {
+      const inp = document.getElementById(id);
+      if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+      else { inp.type = 'password'; btn.textContent = '👁'; }
     }
-  }
 
-  // ─── PASSWORD TOGGLE ──────────────────────────────────────
-  function togglePass(id, btn) {
-    const inp = document.getElementById(id);
-    if (inp.type === 'password') { inp.type = 'text';     btn.textContent = '🙈'; }
-    else                         { inp.type = 'password'; btn.textContent = '👁'; }
-  }
-
-  // ─── PASSWORD STRENGTH ────────────────────────────────────
-  function checkStrength(val) {
-    const segs  = ['s1','s2','s3','s4'].map(id => document.getElementById(id));
-    const label = document.getElementById('strength-label');
-    segs.forEach(s => s.style.background = 'var(--border)');
-    let score = 0;
-    if (val.length >= 6)                              score++;
-    if (val.length >= 10)                             score++;
-    if (/[A-Z]/.test(val) && /[0-9]/.test(val))      score++;
-    if (/[^A-Za-z0-9]/.test(val))                    score++;
-    const colors = ['#ff4d4d','#ffb800','#00b4d8','#00c97a'];
-    const labels = ['Weak','Fair','Good','Strong'];
-    for (let i = 0; i < score; i++) segs[i].style.background = colors[score - 1];
-    label.textContent = score > 0 ? labels[score - 1] : '';
-    label.style.color = score > 0 ? colors[score - 1] : 'var(--muted)';
-  }
-
-  // ─── ERROR HELPERS ────────────────────────────────────────
-  function showError(id, show) {
-    const el = document.getElementById(id);
-    if (el) el.classList.toggle('show', show);
-  }
-
-  function clearAllErrors() {
-    document.querySelectorAll('.field-error').forEach(e => e.classList.remove('show'));
-  }
-
-  function showApiError(panelId, msg) {
-    // Display a general API error message below the submit button
-    let errEl = document.getElementById(panelId + '-api-err');
-    if (!errEl) {
-      errEl = document.createElement('p');
-      errEl.id = panelId + '-api-err';
-      errEl.style.cssText = 'color:#ff4d4d;font-size:0.82rem;text-align:center;margin-top:12px;';
-      document.querySelector(`#${panelId} .submit-btn`).after(errEl);
+    // ─── PASSWORD STRENGTH ────────────────────────────────────
+    function checkStrength(val) {
+      const segs = ['s1', 's2', 's3', 's4'].map(id => document.getElementById(id));
+      const label = document.getElementById('strength-label');
+      segs.forEach(s => s.style.background = 'var(--border)');
+      let score = 0;
+      if (val.length >= 6) score++;
+      if (val.length >= 10) score++;
+      if (/[A-Z]/.test(val) && /[0-9]/.test(val)) score++;
+      if (/[^A-Za-z0-9]/.test(val)) score++;
+      const colors = ['#ff4d4d', '#ffb800', '#00b4d8', '#00c97a'];
+      const labels = ['Weak', 'Fair', 'Good', 'Strong'];
+      for (let i = 0; i < score; i++) segs[i].style.background = colors[score - 1];
+      label.textContent = score > 0 ? labels[score - 1] : '';
+      label.style.color = score > 0 ? colors[score - 1] : 'var(--muted)';
     }
-    errEl.textContent = '⚠️ ' + msg;
-  }
 
-  function clearApiError(panelId) {
-    const el = document.getElementById(panelId + '-api-err');
-    if (el) el.textContent = '';
-  }
+    // ─── ERROR HELPERS ────────────────────────────────────────
+    function showError(id, show) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('show', show);
+    }
 
-  // ─── LOGIN ────────────────────────────────────────────────
-  async function handleLogin() {
-    clearApiError('panel-login');
+    function clearAllErrors() {
+      document.querySelectorAll('.field-error').forEach(e => e.classList.remove('show'));
+    }
 
-    const email = document.getElementById('login-email').value.trim();
-    const pass  = document.getElementById('login-pass').value.trim();
+    function showApiError(panelId, msg) {
+      // Display a general API error message below the submit button
+      let errEl = document.getElementById(panelId + '-api-err');
+      if (!errEl) {
+        errEl = document.createElement('p');
+        errEl.id = panelId + '-api-err';
+        errEl.style.cssText = 'color:#ff4d4d;font-size:0.82rem;text-align:center;margin-top:12px;';
+        document.querySelector(`#${panelId} .submit-btn`).after(errEl);
+      }
+      errEl.textContent = '⚠️ ' + msg;
+    }
 
-    // Client-side validation
-    let valid = true;
-    if (!email || !/\S+@\S+\.\S+/.test(email)) { showError('login-email-err', true);  valid = false; }
-    else                                         { showError('login-email-err', false); }
-    if (!pass)                                   { showError('login-pass-err', true);   valid = false; }
-    else                                         { showError('login-pass-err', false);  }
-    if (!valid) return;
+    function clearApiError(panelId) {
+      const el = document.getElementById(panelId + '-api-err');
+      if (el) el.textContent = '';
+    }
 
-    // Loading state
-    const btn = document.querySelector('#panel-login .submit-btn');
-    btn.classList.add('loading');
-    btn.textContent = 'Logging in...';
+    // ─── LOGIN ────────────────────────────────────────────────
+    async function handleLogin() {
+      clearApiError('panel-login');
 
-    try {
-      const res  = await fetch(`${API}/auth/login`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ email, password: pass })
-      });
+      const email = document.getElementById('login-email').value.trim();
+      const pass = document.getElementById('login-pass').value.trim();
 
-      const data = await res.json();
+      // Client-side validation
+      let valid = true;
+      if (!email || !/\S+@\S+\.\S+/.test(email)) { showError('login-email-err', true); valid = false; }
+      else { showError('login-email-err', false); }
+      if (!pass) { showError('login-pass-err', true); valid = false; }
+      else { showError('login-pass-err', false); }
+      if (!valid) return;
 
-      if (!res.ok) {
-        // Server returned an error (wrong password, not found, etc.)
+      // Loading state
+      const btn = document.querySelector('#panel-login .submit-btn');
+      btn.classList.add('loading');
+      btn.textContent = 'Logging in...';
+
+      try {
+        const res = await fetch(`${API}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password: pass })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          // Server returned an error (wrong password, not found, etc.)
+          btn.classList.remove('loading');
+          btn.textContent = 'Log In →';
+          showApiError('panel-login', data.message || 'Login failed. Try again.');
+          return;
+        }
+
+        // ✅ SUCCESS — save token + user info
+        localStorage.setItem('feastrush_token', data.token);
+        localStorage.setItem('feastrush_user', JSON.stringify(data.user));
+
+        // Show success UI
+        document.getElementById('panel-login').classList.remove('active');
+        const ss = document.getElementById('success-state');
+        ss.classList.add('show');
+        document.getElementById('success-msg').textContent =
+          `Welcome back, ${data.user.firstName}! Redirecting...`;
+
+        // Redirect after short delay
+        setTimeout(() => redirectByRole(data.user.role), 1200);
+
+      } catch (err) {
+        // Network error — backend not running
         btn.classList.remove('loading');
         btn.textContent = 'Log In →';
-        showApiError('panel-login', data.message || 'Login failed. Try again.');
-        return;
+        showApiError('panel-login', 'Cannot connect to server. Is the backend running?');
+      }
+    }
+
+    // ─── REGISTER ─────────────────────────────────────────────
+    async function handleRegister() {
+      clearApiError('panel-register');
+
+      let valid = true;
+      let body = {};
+
+      if (currentRegRole === 'customer') {
+        const firstName = document.getElementById('reg-fname').value.trim();
+        const lastName = document.getElementById('reg-lname').value.trim();
+        const email = document.getElementById('reg-email').value.trim();
+        const phone = document.getElementById('reg-phone').value.trim();
+
+        if (!firstName) { showError('reg-fname-err', true); valid = false; } else showError('reg-fname-err', false);
+        if (!email || !/\S+@\S+\.\S+/.test(email)) { showError('reg-email-err', true); valid = false; } else showError('reg-email-err', false);
+        if (!phone) { showError('reg-phone-err', true); valid = false; } else showError('reg-phone-err', false);
+
+        body = { firstName, lastName, email, phone, role: 'user' };
+
+      } else {
+        // Restaurant owner registration
+        const restaurantName = document.getElementById('reg-rname').value.trim();
+        const ownerName = document.getElementById('reg-owner').value.trim();
+        const email = document.getElementById('reg-remail').value.trim();
+        const phone = document.getElementById('reg-rphone').value.trim();
+        const cuisine = document.getElementById('reg-cuisine').value;
+
+        if (!restaurantName) { showError('reg-rname-err', true); valid = false; } else showError('reg-rname-err', false);
+
+        // Split owner name into first + last
+        const nameParts = ownerName.split(' ');
+        body = {
+          firstName: nameParts[0] || ownerName,
+          lastName: nameParts.slice(1).join(' ') || '',
+          email,
+          phone,
+          role: 'owner',
+          restaurantName,
+          cuisine
+        };
       }
 
-      // ✅ SUCCESS — save token + user info
-      localStorage.setItem('feastrush_token', data.token);
-      localStorage.setItem('feastrush_user',  JSON.stringify(data.user));
+      // Password validation
+      const pass = document.getElementById('reg-pass').value;
+      const cpass = document.getElementById('reg-cpass').value;
+      if (pass.length < 6) { showError('reg-pass-err', true); valid = false; } else showError('reg-pass-err', false);
+      if (pass !== cpass) { showError('reg-cpass-err', true); valid = false; } else showError('reg-cpass-err', false);
+      if (!document.getElementById('agree-terms').checked) {
+        showApiError('panel-register', 'Please agree to the Terms of Service.');
+        valid = false;
+      }
+      if (!valid) return;
 
-      // Show success UI
-      document.getElementById('panel-login').classList.remove('active');
-      const ss = document.getElementById('success-state');
-      ss.classList.add('show');
-      document.getElementById('success-msg').textContent =
-        `Welcome back, ${data.user.firstName}! Redirecting...`;
+      body.password = pass;
 
-      // Redirect after short delay
-      setTimeout(() => redirectByRole(data.user.role), 1200);
+      // Loading state
+      const btn = document.querySelector('#panel-register .submit-btn');
+      btn.classList.add('loading');
+      btn.textContent = 'Creating account...';
 
-    } catch (err) {
-      // Network error — backend not running
-      btn.classList.remove('loading');
-      btn.textContent = 'Log In →';
-      showApiError('panel-login', 'Cannot connect to server. Is the backend running?');
-    }
-  }
+      try {
+        const res = await fetch(`${API}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
 
-  // ─── REGISTER ─────────────────────────────────────────────
-  async function handleRegister() {
-    clearApiError('panel-register');
+        const data = await res.json();
 
-    let valid = true;
-    let body  = {};
+        if (!res.ok) {
+          btn.classList.remove('loading');
+          btn.textContent = 'Create Account 🚀';
+          showApiError('panel-register', data.message || 'Registration failed. Try again.');
+          return;
+        }
 
-    if (currentRegRole === 'customer') {
-      const firstName = document.getElementById('reg-fname').value.trim();
-      const lastName  = document.getElementById('reg-lname').value.trim();
-      const email     = document.getElementById('reg-email').value.trim();
-      const phone     = document.getElementById('reg-phone').value.trim();
+        // ✅ SUCCESS — save token + user info
+        localStorage.setItem('feastrush_token', data.token);
+        localStorage.setItem('feastrush_user', JSON.stringify(data.user));
 
-      if (!firstName)                          { showError('reg-fname-err', true);  valid = false; } else showError('reg-fname-err', false);
-      if (!email || !/\S+@\S+\.\S+/.test(email)) { showError('reg-email-err', true);  valid = false; } else showError('reg-email-err', false);
-      if (!phone)                              { showError('reg-phone-err', true);  valid = false; } else showError('reg-phone-err', false);
+        // Show success UI
+        document.getElementById('panel-register').classList.remove('active');
+        const ss = document.getElementById('success-state');
+        ss.classList.add('show');
 
-      body = { firstName, lastName, email, phone, role: 'user' };
+        if (data.user.role === 'owner') {
+          document.getElementById('success-msg').textContent =
+            'Restaurant registered! Waiting for admin approval. Redirecting...';
+        } else {
+          document.getElementById('success-msg').textContent =
+            `Account created! Welcome, ${data.user.firstName} 🍕 Redirecting...`;
+        }
 
-    } else {
-      // Restaurant owner registration
-      const restaurantName = document.getElementById('reg-rname').value.trim();
-      const ownerName      = document.getElementById('reg-owner').value.trim();
-      const email          = document.getElementById('reg-remail').value.trim();
-      const phone          = document.getElementById('reg-rphone').value.trim();
-      const cuisine        = document.getElementById('reg-cuisine').value;
+        // Redirect after short delay
+        setTimeout(() => redirectByRole(data.user.role), 1500);
 
-      if (!restaurantName) { showError('reg-rname-err', true); valid = false; } else showError('reg-rname-err', false);
-
-      // Split owner name into first + last
-      const nameParts = ownerName.split(' ');
-      body = {
-        firstName:      nameParts[0] || ownerName,
-        lastName:       nameParts.slice(1).join(' ') || '',
-        email,
-        phone,
-        role:           'owner',
-        restaurantName,
-        cuisine
-      };
-    }
-
-    // Password validation
-    const pass  = document.getElementById('reg-pass').value;
-    const cpass = document.getElementById('reg-cpass').value;
-    if (pass.length < 6) { showError('reg-pass-err', true);  valid = false; } else showError('reg-pass-err', false);
-    if (pass !== cpass)  { showError('reg-cpass-err', true); valid = false; } else showError('reg-cpass-err', false);
-    if (!document.getElementById('agree-terms').checked) {
-      showApiError('panel-register', 'Please agree to the Terms of Service.');
-      valid = false;
-    }
-    if (!valid) return;
-
-    body.password = pass;
-
-    // Loading state
-    const btn = document.querySelector('#panel-register .submit-btn');
-    btn.classList.add('loading');
-    btn.textContent = 'Creating account...';
-
-    try {
-      const res  = await fetch(`${API}/auth/register`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(body)
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
+      } catch (err) {
         btn.classList.remove('loading');
         btn.textContent = 'Create Account 🚀';
-        showApiError('panel-register', data.message || 'Registration failed. Try again.');
-        return;
+        showApiError('panel-register', 'Cannot connect to server. Is the backend running?');
       }
-
-      // ✅ SUCCESS — save token + user info
-      localStorage.setItem('feastrush_token', data.token);
-      localStorage.setItem('feastrush_user',  JSON.stringify(data.user));
-
-      // Show success UI
-      document.getElementById('panel-register').classList.remove('active');
-      const ss = document.getElementById('success-state');
-      ss.classList.add('show');
-
-      if (data.user.role === 'owner') {
-        document.getElementById('success-msg').textContent =
-          'Restaurant registered! Waiting for admin approval. Redirecting...';
-      } else {
-        document.getElementById('success-msg').textContent =
-          `Account created! Welcome, ${data.user.firstName} 🍕 Redirecting...`;
-      }
-
-      // Redirect after short delay
-      setTimeout(() => redirectByRole(data.user.role), 1500);
-
-    } catch (err) {
-      btn.classList.remove('loading');
-      btn.textContent = 'Create Account 🚀';
-      showApiError('panel-register', 'Cannot connect to server. Is the backend running?');
     }
-  }
-</script>
+  </script>
 </body>
+
 </html>
