@@ -378,7 +378,7 @@
 
 <!-- NAV -->
 <nav>
-  <a class="logo" href="foodie-home.html">Feast<span>Rush</span></a>
+  <a class="logo" href="index.html">Feast<span>Rush</span></a>
   <div class="nav-search">
     <span>🔍</span>
     <input type="text" id="nav-search" placeholder="Search restaurants or dishes..." oninput="filterRestaurants()"/>
@@ -701,35 +701,209 @@
 </div>
 
 <script>
-  let activeCuisine = 'All';
-  let activeSort = 'relevance';
-  let activeRating = 0;
-  let maxTime = 60;
-  let isListView = false;
+  // ─── CONFIG ───────────────────────────────────────────────
+  const API = 'http://localhost:5000/api';
 
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    document.getElementById('toast-msg').textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2500);
+  // ─── STATE ────────────────────────────────────────────────
+  const token     = localStorage.getItem('feastrush_token');
+  const user      = JSON.parse(localStorage.getItem('feastrush_user') || '{}');
+  let allRestaurants = [];   // raw data from backend
+  let activeCuisine  = 'All';
+  let activeSort     = 'relevance';
+  let activeRating   = 0;
+  let maxTime        = 60;
+  let isListView     = false;
+
+  // background colours & emojis for cards (cycles through)
+  const BG_CLASSES = ['bg1','bg2','bg3','bg4','bg5','bg6','bg7','bg8','bg9'];
+  const EMOJIS     = { Italian:'🍕', Indian:'🍱', Chinese:'🍜', Mexican:'🌮', Japanese:'🍣', American:'🍔', Desserts:'🍰', 'South Indian':'🥘', Healthy:'🥗', Other:'🍽️' };
+
+  // ─── AUTH GUARD ───────────────────────────────────────────
+  // uncomment these 3 lines once auth is wired up end-to-end
+  // if (!token) { window.location.href = 'auth.html'; }
+
+  // Show logged-in user name in nav if element exists
+  const userNameEl = document.getElementById('nav-username');
+  if (userNameEl && user.firstName) userNameEl.textContent = user.firstName;
+
+  // ─── ON PAGE LOAD ─────────────────────────────────────────
+  window.addEventListener('DOMContentLoaded', () => {
+    loadRestaurants();
+    updateCartBadge();
+  });
+
+  // ─── FETCH RESTAURANTS FROM BACKEND ──────────────────────
+  async function loadRestaurants() {
+    showSkeletons();          // show loading placeholders
+    try {
+      const res  = await fetch(`${API}/restaurants`);
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.message || 'Failed to load');
+
+      allRestaurants = data.data || [];
+      renderRestaurants(allRestaurants);
+
+    } catch (err) {
+      // backend offline → keep static HTML cards visible, just log the error
+      console.warn('Backend not reachable — showing static cards.', err.message);
+      hideSkeletons();
+    }
   }
 
-  function copyCode(el) {
-    navigator.clipboard?.writeText('FEAST40');
-    showToast('✅ Code FEAST40 copied!');
+  // ─── RENDER RESTAURANT CARDS ─────────────────────────────
+  function renderRestaurants(list) {
+    const featuredGrid = document.getElementById('featured-grid');
+    const allGrid      = document.getElementById('all-grid');
+
+    // Only replace grids if we actually got data from backend
+    if (!list || list.length === 0) {
+      hideSkeletons();
+      updateCount(0);
+      document.getElementById('empty-state').classList.add('show');
+      return;
+    }
+
+    document.getElementById('empty-state').classList.remove('show');
+
+    // Split: first 3 → featured, rest → all
+    const featured = list.slice(0, 3);
+    const rest     = list.slice(3);
+
+    featuredGrid.innerHTML = featured.map((r, i) => buildCard(r, i)).join('');
+    allGrid.innerHTML      = rest.map((r, i) => buildCard(r, i + 3)).join('');
+
+    updateCount(list.length);
+    applyViewMode();
   }
 
-  function toggleFav(btn) {
-    btn.classList.toggle('liked');
-    btn.textContent = btn.classList.contains('liked') ? '❤' : '♡';
-    showToast(btn.classList.contains('liked') ? '❤️ Added to favourites' : '💔 Removed from favourites');
+  // ─── BUILD A SINGLE RESTAURANT CARD ──────────────────────
+  function buildCard(r, idx) {
+    const bg      = BG_CLASSES[idx % BG_CLASSES.length];
+    const emoji   = EMOJIS[r.cuisine] || '🍽️';
+    const rating  = r.rating ? r.rating.toFixed(1) : 'New';
+    const isOpen  = r.isOpen;
+    const fee     = r.deliveryFee === 0 ? 'Free' : `₹${r.deliveryFee}`;
+    const badge   = idx === 0 ? '<div class="card-badge badge-popular">🔥 Popular</div>'
+                  : idx === 1 ? '<div class="card-badge badge-top">⭐ Top Rated</div>'
+                  : r.createdAt && isNew(r.createdAt) ? '<div class="card-badge badge-new">🆕 New</div>'
+                  : '';
+
+    return `
+      <div class="rest-card
+           ${!isOpen ? 'card-closed' : ''}
+           ${isListView ? 'list-view' : ''}"
+           data-cuisine="${r.cuisine}"
+           data-rating="${r.rating || 0}"
+           data-time="${parseInt(r.deliveryTime) || 30}"
+           data-price="${r.minOrder || 99}"
+           data-id="${r._id}">
+
+        <div class="card-img ${bg}">
+          ${emoji}
+          ${badge}
+          ${!isOpen ? '<div class="closed-overlay">Closed Now</div>' : ''}
+          <button class="card-fav" onclick="toggleFav(this)">♡</button>
+        </div>
+
+        <div class="card-body">
+          <h3>${r.name}</h3>
+          <div class="card-meta">
+            <span class="rating">⭐ ${rating}</span>
+            <span>⏱ ${r.deliveryTime || '30 min'}</span>
+            <span class="${isOpen ? 'open' : 'closed-tag'}">● ${isOpen ? 'Open' : 'Closed'}</span>
+            <span>🛵 ${fee}</span>
+          </div>
+          <div class="card-tags">
+            <span class="tag">${r.cuisine}</span>
+          </div>
+          <div class="card-footer">
+            <div class="min-order">Min order <strong>₹${r.minOrder || 99}</strong></div>
+            ${isOpen
+              ? `<button class="order-btn" onclick="openMenu('${r._id}','${r.name}')">View Menu</button>`
+              : `<button class="order-btn" style="opacity:0.5;pointer-events:none">Closed</button>`
+            }
+          </div>
+        </div>
+      </div>`;
   }
 
-  function openMenu(name) {
-    showToast('🍽️ Opening ' + name + ' menu...');
-    setTimeout(() => window.location.href = 'menu.html', 1000);
+  // ─── CHECK IF RESTAURANT IS NEW (within 7 days) ───────────
+  function isNew(createdAt) {
+    return (Date.now() - new Date(createdAt).getTime()) < 7 * 24 * 60 * 60 * 1000;
   }
 
+  // ─── OPEN MENU PAGE ───────────────────────────────────────
+  function openMenu(id, name) {
+    // save chosen restaurant to localStorage so menu.html can read it
+    localStorage.setItem('selected_restaurant_id',   id);
+    localStorage.setItem('selected_restaurant_name', name);
+    showToast('🍽️ Opening ' + name + '...');
+    setTimeout(() => window.location.href = 'menu.html', 800);
+  }
+
+  // ─── FILTER & SEARCH (works on both API data & static cards)
+  function filterRestaurants() {
+    const search = document.getElementById('nav-search').value.toLowerCase();
+
+    // If we have backend data, re-render filtered list
+    if (allRestaurants.length > 0) {
+      let filtered = [...allRestaurants];
+
+      // cuisine filter
+      if (activeCuisine !== 'All') {
+        filtered = filtered.filter(r => r.cuisine === activeCuisine);
+      }
+      // rating filter
+      if (activeRating > 0) {
+        filtered = filtered.filter(r => (r.rating || 0) >= activeRating);
+      }
+      // delivery time filter
+      if (maxTime < 60) {
+        filtered = filtered.filter(r => parseInt(r.deliveryTime) <= maxTime);
+      }
+      // search filter
+      if (search) {
+        filtered = filtered.filter(r =>
+          r.name.toLowerCase().includes(search) ||
+          r.cuisine.toLowerCase().includes(search)
+        );
+      }
+      // sort
+      if (activeSort === 'rating')    filtered.sort((a,b) => (b.rating||0) - (a.rating||0));
+      if (activeSort === 'delivery')  filtered.sort((a,b) => parseInt(a.deliveryTime||99) - parseInt(b.deliveryTime||99));
+      if (activeSort === 'price_low') filtered.sort((a,b) => (a.minOrder||0) - (b.minOrder||0));
+      if (activeSort === 'price_high')filtered.sort((a,b) => (b.minOrder||0) - (a.minOrder||0));
+
+      renderRestaurants(filtered);
+      return;
+    }
+
+    // Fallback: filter static HTML cards
+    const allCards = [
+      ...document.querySelectorAll('#featured-grid .rest-card'),
+      ...document.querySelectorAll('#all-grid .rest-card')
+    ];
+    let visible = 0;
+    allCards.forEach(card => {
+      const cuisine     = card.dataset.cuisine || '';
+      const rating      = parseFloat(card.dataset.rating) || 0;
+      const time        = parseInt(card.dataset.time) || 60;
+      const name        = card.querySelector('h3')?.textContent.toLowerCase() || '';
+      const cuisineOk   = activeCuisine === 'All' || cuisine === activeCuisine;
+      const ratingOk    = rating >= activeRating;
+      const timeOk      = time <= maxTime;
+      const searchOk    = !search || name.includes(search) || cuisine.toLowerCase().includes(search);
+
+      const show = cuisineOk && ratingOk && timeOk && searchOk;
+      card.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+    updateCount(visible);
+    document.getElementById('empty-state').classList.toggle('show', visible === 0);
+  }
+
+  // ─── FILTER BY CUISINE CHIP ───────────────────────────────
   function filterByCuisine(cuisine, el) {
     activeCuisine = cuisine;
     document.querySelectorAll('.cuisine-chip').forEach(c => c.classList.remove('active'));
@@ -737,6 +911,7 @@
     filterRestaurants();
   }
 
+  // ─── SORT ─────────────────────────────────────────────────
   function setSort(sort, el) {
     activeSort = sort;
     document.querySelectorAll('.sort-opt').forEach(s => s.classList.remove('active'));
@@ -744,6 +919,7 @@
     filterRestaurants();
   }
 
+  // ─── RATING FILTER ────────────────────────────────────────
   function setRating(rating, el) {
     activeRating = rating;
     document.querySelectorAll('.star-row').forEach(s => s.classList.remove('active'));
@@ -751,67 +927,97 @@
     filterRestaurants();
   }
 
+  // ─── DELIVERY TIME RANGE ──────────────────────────────────
   function updateRange(el) {
     maxTime = parseInt(el.value);
     document.getElementById('range-val').textContent = 'Under ' + maxTime + ' min';
     filterRestaurants();
   }
 
+  // ─── VIEW TOGGLE (grid / list) ────────────────────────────
   function setView(view, btn) {
     isListView = view === 'list';
     document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    document.querySelectorAll('.rest-grid').forEach(g => {
-      if (isListView) g.classList.add('list-view'); else g.classList.remove('list-view');
-    });
-    document.querySelectorAll('.rest-card').forEach(c => {
-      if (isListView) c.classList.add('list-view'); else c.classList.remove('list-view');
-    });
+    applyViewMode();
   }
 
-  function filterRestaurants() {
-    const search = document.getElementById('nav-search').value.toLowerCase();
-    let allCards = [...document.querySelectorAll('#featured-grid .rest-card'), ...document.querySelectorAll('#all-grid .rest-card')];
-    let visible = 0;
-
-    allCards.forEach(card => {
-      const cuisine = card.dataset.cuisine || '';
-      const rating = parseFloat(card.dataset.rating) || 0;
-      const time = parseInt(card.dataset.time) || 60;
-      const name = card.querySelector('h3')?.textContent.toLowerCase() || '';
-
-      const cuisineMatch = activeCuisine === 'All' || cuisine === activeCuisine;
-      const ratingMatch = rating >= activeRating;
-      const timeMatch = time <= maxTime;
-      const searchMatch = !search || name.includes(search) || cuisine.toLowerCase().includes(search);
-
-      if (cuisineMatch && ratingMatch && timeMatch && searchMatch) {
-        card.style.display = '';
-        visible++;
-      } else {
-        card.style.display = 'none';
-      }
-    });
-
-    document.getElementById('count-num').textContent = visible;
-    document.getElementById('count-label').textContent = visible === 1 ? 'restaurant found' : 'restaurants found';
-    document.getElementById('empty-state').classList.toggle('show', visible === 0);
+  function applyViewMode() {
+    document.querySelectorAll('.rest-grid').forEach(g => g.classList.toggle('list-view', isListView));
+    document.querySelectorAll('.rest-card').forEach(c => c.classList.toggle('list-view', isListView));
   }
 
+  // ─── RESET ALL FILTERS ────────────────────────────────────
   function resetFilters() {
     activeCuisine = 'All';
-    activeSort = 'relevance';
-    activeRating = 0;
-    maxTime = 60;
-    document.getElementById('nav-search').value = '';
-    document.getElementById('delivery-range').value = 60;
-    document.getElementById('range-val').textContent = 'Under 60 min';
+    activeSort    = 'relevance';
+    activeRating  = 0;
+    maxTime       = 60;
+    document.getElementById('nav-search').value       = '';
+    document.getElementById('delivery-range').value   = 60;
+    document.getElementById('range-val').textContent  = 'Under 60 min';
     document.querySelectorAll('.cuisine-chip').forEach((c,i) => c.classList.toggle('active', i===0));
-    document.querySelectorAll('.sort-opt').forEach((s,i) => s.classList.toggle('active', i===0));
-    document.querySelectorAll('.star-row').forEach((s,i) => s.classList.toggle('active', i===0));
+    document.querySelectorAll('.sort-opt').forEach((s,i)    => s.classList.toggle('active', i===0));
+    document.querySelectorAll('.star-row').forEach((s,i)    => s.classList.toggle('active', i===0));
     document.querySelectorAll('.check-item input').forEach(c => c.checked = false);
     filterRestaurants();
     showToast('↺ Filters reset');
+  }
+
+  // ─── FAVOURITE TOGGLE ────────────────────────────────────
+  function toggleFav(btn) {
+    btn.classList.toggle('liked');
+    btn.textContent = btn.classList.contains('liked') ? '❤' : '♡';
+    showToast(btn.classList.contains('liked') ? '❤️ Added to favourites' : '💔 Removed from favourites');
+  }
+
+  // ─── COPY COUPON CODE ─────────────────────────────────────
+  function copyCode(el) {
+    navigator.clipboard?.writeText('FEAST40');
+    showToast('✅ Code FEAST40 copied!');
+  }
+
+  // ─── CART BADGE (reads localStorage cart) ────────────────
+  function updateCartBadge() {
+    const cart  = JSON.parse(localStorage.getItem('feastrush_cart') || '{}');
+    const total = Object.values(cart).reduce((s, item) => s + (item.qty || 0), 0);
+    const badge = document.getElementById('cart-count');
+    if (badge) badge.textContent = total;
+  }
+
+  // ─── COUNT LABEL ─────────────────────────────────────────
+  function updateCount(n) {
+    document.getElementById('count-num').textContent   = n;
+    document.getElementById('count-label').textContent = n === 1 ? 'restaurant found' : 'restaurants found';
+  }
+
+  // ─── SKELETON LOADERS ────────────────────────────────────
+  function showSkeletons() {
+    const skeletonCard = `
+      <div class="rest-card" style="pointer-events:none">
+        <div class="card-img bg1" style="filter:brightness(0.4);animation:pulse 1.5s infinite"></div>
+        <div class="card-body">
+          <div style="height:14px;width:60%;background:var(--border);border-radius:6px;margin-bottom:10px;animation:pulse 1.5s infinite"></div>
+          <div style="height:10px;width:80%;background:var(--border);border-radius:6px;animation:pulse 1.5s infinite"></div>
+        </div>
+      </div>`;
+    document.getElementById('featured-grid').innerHTML = skeletonCard.repeat(3);
+    document.getElementById('all-grid').innerHTML      = skeletonCard.repeat(3);
+  }
+
+  function hideSkeletons() {
+    // skeletons are replaced by renderRestaurants()
+    // if backend is offline the original static HTML was already overwritten,
+    // so reload the page to show static cards again
+  }
+
+  // ─── TOAST ───────────────────────────────────────────────
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('show'), 2500);
   }
 </script>
 </body>
