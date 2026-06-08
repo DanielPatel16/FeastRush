@@ -1,1044 +1,1138 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>FeastRush — Food Delivered Fast</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-<style>
-  :root {
-    --bg: #0d0d0d;
-    --surface: #161616;
-    --card: #1c1c1c;
-    --border: #2a2a2a;
-    --accent: #ff4d00;
-    --accent2: #ffb800;
-    --text: #f0ede8;
-    --muted: #7a7672;
-    --radius: 16px;
-  }
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    overflow-x: hidden;
-  }
-
-  /* NOISE OVERLAY */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 999;
-    opacity: 0.4;
-  }
-
-  /* NAV */
-  nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px 48px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: rgba(13,13,13,0.85);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .logo {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 1.6rem;
-    letter-spacing: -1px;
-    color: var(--text);
-  }
-
-  .logo span { color: var(--accent); }
-
-  .nav-links {
-    display: flex;
-    gap: 32px;
-    list-style: none;
-  }
-
-  .nav-links a {
-    text-decoration: none;
-    color: var(--muted);
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: color 0.2s;
-  }
-
-  .nav-links a:hover { color: var(--text); }
-
-  .nav-actions { display: flex; gap: 12px; align-items: center; }
-
-  .btn {
-    padding: 10px 22px;
-    border-radius: 50px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.88rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: none;
-  }
-
-  .btn-ghost {
-    background: transparent;
-    color: var(--text);
-    border: 1px solid var(--border);
-  }
-
-  .btn-ghost:hover { border-color: var(--muted); }
-
-  .btn-primary {
-    background: var(--accent);
-    color: #fff;
-  }
-
-  .btn-primary:hover {
-    background: #ff6020;
-    transform: translateY(-1px);
-    box-shadow: 0 8px 24px rgba(255,77,0,0.35);
-  }
-
-  /* HERO */
-  .hero {
-    min-height: 92vh;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    align-items: center;
-    padding: 60px 48px;
-    gap: 40px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .hero::after {
-    content: '';
-    position: absolute;
-    top: -100px;
-    right: -100px;
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(circle, rgba(255,77,0,0.12) 0%, transparent 70%);
-    pointer-events: none;
-  }
-
-  .hero-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(255,184,0,0.1);
-    border: 1px solid rgba(255,184,0,0.25);
-    color: var(--accent2);
-    padding: 6px 14px;
-    border-radius: 50px;
-    font-size: 0.78rem;
-    font-weight: 500;
-    margin-bottom: 24px;
-    animation: fadeUp 0.6s ease both;
-  }
-
-  .hero-badge::before { content: '⚡'; }
-
-  .hero h1 {
-    font-family: 'Syne', sans-serif;
-    font-size: clamp(3rem, 5vw, 5.5rem);
-    font-weight: 800;
-    line-height: 1.0;
-    letter-spacing: -2px;
-    margin-bottom: 24px;
-    animation: fadeUp 0.6s 0.1s ease both;
-  }
-
-  .hero h1 .highlight {
-    color: var(--accent);
-    position: relative;
-    display: inline-block;
-  }
-
-  .hero h1 .highlight::after {
-    content: '';
-    position: absolute;
-    bottom: 4px;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background: var(--accent);
-    border-radius: 2px;
-    opacity: 0.4;
-  }
-
-  .hero p {
-    color: var(--muted);
-    font-size: 1.05rem;
-    line-height: 1.7;
-    max-width: 440px;
-    margin-bottom: 36px;
-    animation: fadeUp 0.6s 0.2s ease both;
-  }
-
-  .hero-actions {
-    display: flex;
-    gap: 14px;
-    align-items: center;
-    animation: fadeUp 0.6s 0.3s ease both;
-  }
-
-  .hero-actions .btn { padding: 14px 30px; font-size: 0.95rem; }
-
-  .hero-stats {
-    display: flex;
-    gap: 32px;
-    margin-top: 48px;
-    animation: fadeUp 0.6s 0.4s ease both;
-  }
-
-  .stat-item { display: flex; flex-direction: column; gap: 4px; }
-
-  .stat-num {
-    font-family: 'Syne', sans-serif;
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: var(--text);
-  }
-
-  .stat-label { font-size: 0.78rem; color: var(--muted); }
-
-  /* HERO VISUAL */
-  .hero-visual {
-    position: relative;
-    animation: fadeUp 0.8s 0.2s ease both;
-  }
-
-  .phone-mockup {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 32px;
-    padding: 20px;
-    max-width: 320px;
-    margin: 0 auto;
-    box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
-    position: relative;
-  }
-
-  .phone-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-  }
-
-  .phone-top-left { display: flex; flex-direction: column; gap: 2px; }
-  .phone-top-left small { color: var(--muted); font-size: 0.72rem; }
-  .phone-top-left strong { font-size: 0.9rem; font-weight: 600; }
-
-  .cart-btn {
-    background: var(--accent);
-    border-radius: 50%;
-    width: 38px;
-    height: 38px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    position: relative;
-  }
-
-  .cart-dot {
-    position: absolute;
-    top: -2px;
-    right: -2px;
-    background: var(--accent2);
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    font-size: 0.6rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #000;
-    font-weight: 700;
-  }
-
-  .search-bar {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--muted);
-    font-size: 0.82rem;
-    margin-bottom: 20px;
-  }
-
-  .category-chips {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 20px;
-    overflow: hidden;
-  }
-
-  .chip {
-    padding: 6px 14px;
-    border-radius: 50px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    white-space: nowrap;
-    border: 1px solid var(--border);
-    color: var(--muted);
-  }
-
-  .chip.active {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-  }
-
-  .restaurant-card-mini {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 14px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 10px;
-    transition: border-color 0.2s;
-  }
-
-  .restaurant-card-mini:hover { border-color: var(--accent); }
-
-  .rest-emoji {
-    font-size: 2rem;
-    width: 52px;
-    height: 52px;
-    background: var(--card);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .rest-info { flex: 1; }
-  .rest-info strong { font-size: 0.88rem; display: block; margin-bottom: 2px; }
-  .rest-info small { color: var(--muted); font-size: 0.73rem; }
-
-  .rest-meta { text-align: right; }
-  .rest-rating { font-size: 0.78rem; color: var(--accent2); font-weight: 600; }
-  .rest-time { font-size: 0.7rem; color: var(--muted); }
-
-  /* FLOATING TAGS */
-  .float-tag {
-    position: absolute;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 10px 14px;
-    font-size: 0.78rem;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-    animation: float 3s ease-in-out infinite;
-  }
-
-  .float-tag.t1 { top: 20px; right: -40px; animation-delay: 0s; }
-  .float-tag.t2 { bottom: 60px; left: -50px; animation-delay: 1.5s; }
-
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
-  }
-
-  /* SEARCH SECTION */
-  .search-section {
-    padding: 60px 48px;
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .search-section h2 {
-    font-family: 'Syne', sans-serif;
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin-bottom: 20px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-  }
-
-  .big-search {
-    display: flex;
-    gap: 12px;
-    max-width: 700px;
-  }
-
-  .big-search input {
-    flex: 1;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 16px 20px;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 1rem;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-
-  .big-search input:focus { border-color: var(--accent); }
-  .big-search input::placeholder { color: var(--muted); }
-
-  .big-search .btn-primary { padding: 16px 28px; border-radius: 14px; font-size: 0.95rem; }
-
-  /* CATEGORIES */
-  .section { padding: 80px 48px; }
-
-  .section-header {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    margin-bottom: 40px;
-  }
-
-  .section-header h2 {
-    font-family: 'Syne', sans-serif;
-    font-size: 2.2rem;
-    font-weight: 800;
-    letter-spacing: -1px;
-  }
-
-  .section-header a {
-    color: var(--accent);
-    text-decoration: none;
-    font-size: 0.88rem;
-    font-weight: 500;
-  }
-
-  .category-grid {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 16px;
-  }
-
-  .cat-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 24px 16px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.25s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .cat-card:hover {
-    border-color: var(--accent);
-    transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(255,77,0,0.15);
-  }
-
-  .cat-emoji { font-size: 2.4rem; }
-
-  .cat-name {
-    font-size: 0.82rem;
-    font-weight: 500;
-    color: var(--muted);
-  }
-
-  /* RESTAURANTS GRID */
-  .restaurants-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-  }
-
-  .rest-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: all 0.3s;
-  }
-
-  .rest-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 20px 48px rgba(0,0,0,0.5);
-    border-color: rgba(255,77,0,0.3);
-  }
-
-  .rest-card-img {
-    height: 180px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 4rem;
-    position: relative;
-  }
-
-  .rest-card-img.bg1 { background: linear-gradient(135deg, #1a0a00, #3d1500); }
-  .rest-card-img.bg2 { background: linear-gradient(135deg, #001a10, #003d20); }
-  .rest-card-img.bg3 { background: linear-gradient(135deg, #1a1500, #3d3200); }
-  .rest-card-img.bg4 { background: linear-gradient(135deg, #0a001a, #20003d); }
-  .rest-card-img.bg5 { background: linear-gradient(135deg, #001a1a, #003d3d); }
-  .rest-card-img.bg6 { background: linear-gradient(135deg, #1a0010, #3d0025); }
-
-  .rest-card-badge {
-    position: absolute;
-    top: 14px;
-    left: 14px;
-    background: var(--accent);
-    color: #fff;
-    font-size: 0.7rem;
-    font-weight: 600;
-    padding: 4px 10px;
-    border-radius: 50px;
-  }
-
-  .rest-card-fav {
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    background: rgba(0,0,0,0.5);
-    border-radius: 50%;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-
-  .rest-card-fav:hover { background: rgba(255,77,0,0.4); }
-
-  .rest-card-body { padding: 18px; }
-
-  .rest-card-body h3 {
-    font-family: 'Syne', sans-serif;
-    font-size: 1.05rem;
-    font-weight: 700;
-    margin-bottom: 6px;
-  }
-
-  .rest-card-meta {
-    display: flex;
-    gap: 12px;
-    color: var(--muted);
-    font-size: 0.78rem;
-    margin-bottom: 14px;
-  }
-
-  .rest-card-meta span { display: flex; align-items: center; gap: 4px; }
-
-  .rest-card-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-top: 14px;
-    border-top: 1px solid var(--border);
-  }
-
-  .rest-tags { display: flex; gap: 6px; }
-
-  .tag {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-size: 0.7rem;
-    padding: 3px 8px;
-    border-radius: 50px;
-  }
-
-  .order-btn {
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 50px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    transition: all 0.2s;
-  }
-
-  .order-btn:hover {
-    background: #ff6020;
-    transform: scale(1.04);
-  }
-
-  /* HOW IT WORKS */
-  .how-section {
-    padding: 80px 48px;
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .how-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 32px;
-    margin-top: 48px;
-  }
-
-  .how-card {
-    text-align: center;
-    padding: 32px 24px;
-    border-radius: 20px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    position: relative;
-    transition: border-color 0.25s;
-  }
-
-  .how-card:hover { border-color: var(--accent); }
-
-  .how-num {
-    font-family: 'Syne', sans-serif;
-    font-size: 3.5rem;
-    font-weight: 800;
-    color: rgba(255,77,0,0.12);
-    position: absolute;
-    top: 16px;
-    right: 20px;
-    line-height: 1;
-  }
-
-  .how-icon {
-    font-size: 2.2rem;
-    margin-bottom: 16px;
-  }
-
-  .how-card h3 {
-    font-family: 'Syne', sans-serif;
-    font-size: 1rem;
-    font-weight: 700;
-    margin-bottom: 10px;
-  }
-
-  .how-card p { color: var(--muted); font-size: 0.85rem; line-height: 1.6; }
-
-  /* CTA */
-  .cta-section {
-    padding: 100px 48px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .cta-section::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 700px;
-    height: 400px;
-    background: radial-gradient(ellipse, rgba(255,77,0,0.1) 0%, transparent 70%);
-    pointer-events: none;
-  }
-
-  .cta-section h2 {
-    font-family: 'Syne', sans-serif;
-    font-size: clamp(2.5rem, 4vw, 4rem);
-    font-weight: 800;
-    letter-spacing: -1.5px;
-    margin-bottom: 20px;
-  }
-
-  .cta-section p {
-    color: var(--muted);
-    font-size: 1rem;
-    margin-bottom: 36px;
-  }
-
-  .cta-section .btn { padding: 16px 40px; font-size: 1rem; }
-
-  /* FOOTER */
-  footer {
-    padding: 48px;
-    border-top: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  footer .logo { font-size: 1.2rem; }
-
-  footer p { color: var(--muted); font-size: 0.82rem; }
-
-  footer nav { display: flex; gap: 24px; }
-
-  footer nav a {
-    color: var(--muted);
-    text-decoration: none;
-    font-size: 0.82rem;
-    transition: color 0.2s;
-  }
-
-  footer nav a:hover { color: var(--text); }
-
-  /* ANIMATIONS */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(24px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .section { animation: fadeUp 0.7s ease both; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FeastRush — Food Delivered Fast</title>
+  <link rel="stylesheet" href="style.css" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap"
+    rel="stylesheet" />
+  <style>
+    /* NAV */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 48px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13, 13, 13, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+    }
+
+    .nav-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 10px 22px;
+      border-radius: 50px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--muted);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #ff6020;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(255, 77, 0, 0.35);
+    }
+
+    /* HERO */
+    .hero {
+      min-height: 92vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      padding: 60px 48px;
+      gap: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: -100px;
+      right: -100px;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(255, 77, 0, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 184, 0, 0.1);
+      border: 1px solid rgba(255, 184, 0, 0.25);
+      color: var(--accent2);
+      padding: 6px 14px;
+      border-radius: 50px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      margin-bottom: 24px;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .hero-badge::before {
+      content: '⚡';
+    }
+
+    .hero h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(3rem, 5vw, 5.5rem);
+      font-weight: 800;
+      line-height: 1.0;
+      letter-spacing: -2px;
+      margin-bottom: 24px;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+
+    .hero h1 .highlight {
+      color: var(--accent);
+      position: relative;
+      display: inline-block;
+    }
+
+    .hero h1 .highlight::after {
+      content: '';
+      position: absolute;
+      bottom: 4px;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--accent);
+      border-radius: 2px;
+      opacity: 0.4;
+    }
+
+    .hero p {
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.7;
+      max-width: 440px;
+      margin-bottom: 36px;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      animation: fadeUp 0.6s 0.3s ease both;
+    }
+
+    .hero-actions .btn {
+      padding: 14px 30px;
+      font-size: 0.95rem;
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 32px;
+      margin-top: 48px;
+      animation: fadeUp 0.6s 0.4s ease both;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .stat-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .stat-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    /* HERO VISUAL */
+    .hero-visual {
+      position: relative;
+      animation: fadeUp 0.8s 0.2s ease both;
+    }
+
+    .phone-mockup {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 32px;
+      padding: 20px;
+      max-width: 320px;
+      margin: 0 auto;
+      box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.04);
+      position: relative;
+    }
+
+    .phone-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .phone-top-left {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .phone-top-left small {
+      color: var(--muted);
+      font-size: 0.72rem;
+    }
+
+    .phone-top-left strong {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .cart-btn {
+      background: var(--accent);
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      position: relative;
+    }
+
+    .cart-dot {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      background: var(--accent2);
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      font-size: 0.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #000;
+      font-weight: 700;
+    }
+
+    .search-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      margin-bottom: 20px;
+    }
+
+    .category-chips {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    .chip {
+      padding: 6px 14px;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      white-space: nowrap;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .chip.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .restaurant-card-mini {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+      transition: border-color 0.2s;
+    }
+
+    .restaurant-card-mini:hover {
+      border-color: var(--accent);
+    }
+
+    .rest-emoji {
+      font-size: 2rem;
+      width: 52px;
+      height: 52px;
+      background: var(--card);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .rest-info {
+      flex: 1;
+    }
+
+    .rest-info strong {
+      font-size: 0.88rem;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .rest-info small {
+      color: var(--muted);
+      font-size: 0.73rem;
+    }
+
+    .rest-meta {
+      text-align: right;
+    }
+
+    .rest-rating {
+      font-size: 0.78rem;
+      color: var(--accent2);
+      font-weight: 600;
+    }
+
+    .rest-time {
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    /* FLOATING TAGS */
+    .float-tag {
+      position: absolute;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .float-tag.t1 {
+      top: 20px;
+      right: -40px;
+      animation-delay: 0s;
+    }
+
+    .float-tag.t2 {
+      bottom: 60px;
+      left: -50px;
+      animation-delay: 1.5s;
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-8px);
+      }
+    }
+
+    /* SEARCH SECTION */
+    .search-section {
+      padding: 60px 48px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .search-section h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .big-search {
+      display: flex;
+      gap: 12px;
+      max-width: 700px;
+    }
+
+    .big-search input {
+      flex: 1;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 20px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .big-search input:focus {
+      border-color: var(--accent);
+    }
+
+    .big-search input::placeholder {
+      color: var(--muted);
+    }
+
+    .big-search .btn-primary {
+      padding: 16px 28px;
+      border-radius: 14px;
+      font-size: 0.95rem;
+    }
+
+    /* CATEGORIES */
+    .section {
+      padding: 80px 48px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 40px;
+    }
+
+    .section-header h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    .section-header a {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+    }
+
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 16px;
+    }
+
+    .cat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .cat-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(255, 77, 0, 0.15);
+    }
+
+    .cat-emoji {
+      font-size: 2.4rem;
+    }
+
+    .cat-name {
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    /* RESTAURANTS GRID */
+    .restaurants-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .rest-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .rest-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 48px rgba(0, 0, 0, 0.5);
+      border-color: rgba(255, 77, 0, 0.3);
+    }
+
+    .rest-card-img {
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+      position: relative;
+    }
+
+    .rest-card-img.bg1 {
+      background: linear-gradient(135deg, #1a0a00, #3d1500);
+    }
+
+    .rest-card-img.bg2 {
+      background: linear-gradient(135deg, #001a10, #003d20);
+    }
+
+    .rest-card-img.bg3 {
+      background: linear-gradient(135deg, #1a1500, #3d3200);
+    }
+
+    .rest-card-img.bg4 {
+      background: linear-gradient(135deg, #0a001a, #20003d);
+    }
+
+    .rest-card-img.bg5 {
+      background: linear-gradient(135deg, #001a1a, #003d3d);
+    }
+
+    .rest-card-img.bg6 {
+      background: linear-gradient(135deg, #1a0010, #3d0025);
+    }
+
+    .rest-card-badge {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 50px;
+    }
+
+    .rest-card-fav {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .rest-card-fav:hover {
+      background: rgba(255, 77, 0, 0.4);
+    }
+
+    .rest-card-body {
+      padding: 18px;
+    }
+
+    .rest-card-body h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .rest-card-meta {
+      display: flex;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      margin-bottom: 14px;
+    }
+
+    .rest-card-meta span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .rest-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .rest-tags {
+      display: flex;
+      gap: 6px;
+    }
+
+    .tag {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.7rem;
+      padding: 3px 8px;
+      border-radius: 50px;
+    }
+
+    .order-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 50px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.2s;
+    }
+
+    .order-btn:hover {
+      background: #ff6020;
+      transform: scale(1.04);
+    }
+
+    /* HOW IT WORKS */
+    .how-section {
+      padding: 80px 48px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .how-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 32px;
+      margin-top: 48px;
+    }
+
+    .how-card {
+      text-align: center;
+      padding: 32px 24px;
+      border-radius: 20px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      position: relative;
+      transition: border-color 0.25s;
+    }
+
+    .how-card:hover {
+      border-color: var(--accent);
+    }
+
+    .how-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: rgba(255, 77, 0, 0.12);
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      line-height: 1;
+    }
+
+    .how-icon {
+      font-size: 2.2rem;
+      margin-bottom: 16px;
+    }
+
+    .how-card h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .how-card p {
+      color: var(--muted);
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+
+    /* CTA */
+    .cta-section {
+      padding: 100px 48px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 700px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(255, 77, 0, 0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .cta-section h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2.5rem, 4vw, 4rem);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      margin-bottom: 20px;
+    }
+
+    .cta-section p {
+      color: var(--muted);
+      font-size: 1rem;
+      margin-bottom: 36px;
+    }
+
+    .cta-section .btn {
+      padding: 16px 40px;
+      font-size: 1rem;
+    }
+
+    /* FOOTER */
+    footer {
+      padding: 48px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    footer .logo {
+      font-size: 1.2rem;
+    }
+
+    footer p {
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    footer nav {
+      display: flex;
+      gap: 24px;
+    }
+
+    footer nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.82rem;
+      transition: color 0.2s;
+    }
+
+    footer nav a:hover {
+      color: var(--text);
+    }
+
+    .section {
+      animation: fadeUp 0.7s ease both;
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- NAV -->
-<nav>
-  <div class="logo">Feast<span>Rush</span></div>
-  <ul class="nav-links">
-    <li><a href="#">Restaurants</a></li>
-    <li><a href="#">Offers</a></li>
-    <li><a href="#">Track Order</a></li>
-    <li><a href="#">Become a Partner</a></li>
-  </ul>
-  <div class="nav-actions">
-    <button class="btn btn-ghost">Log In</button>
-    <button class="btn btn-primary">Sign Up Free</button>
-  </div>
-</nav>
-
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-content">
-    <div class="hero-badge">Now delivering in 200+ cities</div>
-    <h1>
-      Hungry?<br/>
-      We've got<br/>
-      <span class="highlight">1000+</span><br/>
-      restaurants.
-    </h1>
-    <p>Order from your favourite local spots or discover new ones. Fast delivery, real-time tracking, and the best food — all in one place.</p>
-    <div class="hero-actions">
-      <button class="btn btn-primary">Order Now</button>
-      <button class="btn btn-ghost">Browse Restaurants</button>
-    </div>
-    <div class="hero-stats">
-      <div class="stat-item">
-        <span class="stat-num">1,240+</span>
-        <span class="stat-label">Restaurants</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-num">25 min</span>
-        <span class="stat-label">Avg. Delivery</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-num">4.8 ⭐</span>
-        <span class="stat-label">App Rating</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="hero-visual">
-    <div class="float-tag t1">🔥 Trending Now</div>
-    <div class="float-tag t2">✅ Order Confirmed!</div>
-    <div class="phone-mockup">
-      <div class="phone-top">
-        <div class="phone-top-left">
-          <small>Delivering to</small>
-          <strong>📍 Surat, Gujarat</strong>
-        </div>
-        <div class="cart-btn">
-          🛒
-          <div class="cart-dot">3</div>
-        </div>
-      </div>
-      <div class="search-bar">🔍 Search restaurants or dishes...</div>
-      <div class="category-chips">
-        <div class="chip active">All</div>
-        <div class="chip">🍕 Pizza</div>
-        <div class="chip">🍱 Biryani</div>
-        <div class="chip">🍔 Burgers</div>
-      </div>
-      <div class="restaurant-card-mini">
-        <div class="rest-emoji">🍕</div>
-        <div class="rest-info">
-          <strong>Pizza Palace</strong>
-          <small>Italian · Pizza · Pasta</small>
-        </div>
-        <div class="rest-meta">
-          <div class="rest-rating">⭐ 4.8</div>
-          <div class="rest-time">22 min</div>
-        </div>
-      </div>
-      <div class="restaurant-card-mini">
-        <div class="rest-emoji">🍱</div>
-        <div class="rest-info">
-          <strong>Biryani Bros</strong>
-          <small>Indian · Biryani · Curry</small>
-        </div>
-        <div class="rest-meta">
-          <div class="rest-rating">⭐ 4.6</div>
-          <div class="rest-time">30 min</div>
-        </div>
-      </div>
-      <div class="restaurant-card-mini">
-        <div class="rest-emoji">🍔</div>
-        <div class="rest-info">
-          <strong>Burger Nation</strong>
-          <small>American · Burgers · Fries</small>
-        </div>
-        <div class="rest-meta">
-          <div class="rest-rating">⭐ 4.5</div>
-          <div class="rest-time">18 min</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- SEARCH SECTION -->
-<div class="search-section">
-  <h2>Find Food Near You</h2>
-  <div class="big-search">
-    <input type="text" placeholder="Search for restaurants, dishes, cuisines..."/>
-    <button class="btn btn-primary">Search 🔍</button>
-  </div>
-</div>
-
-<!-- CATEGORIES -->
-<section class="section">
-  <div class="section-header">
-    <h2>What are you craving?</h2>
-    <a href="#">View all →</a>
-  </div>
-  <div class="category-grid">
-    <div class="cat-card"><span class="cat-emoji">🍕</span><span class="cat-name">Pizza</span></div>
-    <div class="cat-card"><span class="cat-emoji">🍱</span><span class="cat-name">Biryani</span></div>
-    <div class="cat-card"><span class="cat-emoji">🍔</span><span class="cat-name">Burgers</span></div>
-    <div class="cat-card"><span class="cat-emoji">🍣</span><span class="cat-name">Sushi</span></div>
-    <div class="cat-card"><span class="cat-emoji">🌮</span><span class="cat-name">Mexican</span></div>
-    <div class="cat-card"><span class="cat-emoji">🍜</span><span class="cat-name">Noodles</span></div>
-  </div>
-</section>
-
-<!-- RESTAURANTS -->
-<section class="section" style="padding-top:0">
-  <div class="section-header">
-    <h2>Top Restaurants</h2>
-    <a href="#">See all →</a>
-  </div>
-  <div class="restaurants-grid">
-
-    <div class="rest-card">
-      <div class="rest-card-img bg1">
-        🍕
-        <span class="rest-card-badge">🔥 Popular</span>
-        <div class="rest-card-fav">♡</div>
-      </div>
-      <div class="rest-card-body">
-        <h3>Pizza Palace</h3>
-        <div class="rest-card-meta">
-          <span>⭐ 4.8</span>
-          <span>⏱ 22 min</span>
-          <span>🛵 Free delivery</span>
-        </div>
-        <div class="rest-card-footer">
-          <div class="rest-tags">
-            <span class="tag">Italian</span>
-            <span class="tag">Pizza</span>
-          </div>
-          <button class="order-btn">Order Now</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="rest-card">
-      <div class="rest-card-img bg2">
-        🍱
-        <span class="rest-card-badge">✅ Top Rated</span>
-        <div class="rest-card-fav">♡</div>
-      </div>
-      <div class="rest-card-body">
-        <h3>Biryani Bros</h3>
-        <div class="rest-card-meta">
-          <span>⭐ 4.6</span>
-          <span>⏱ 30 min</span>
-          <span>🛵 ₹25 delivery</span>
-        </div>
-        <div class="rest-card-footer">
-          <div class="rest-tags">
-            <span class="tag">Indian</span>
-            <span class="tag">Biryani</span>
-          </div>
-          <button class="order-btn">Order Now</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="rest-card">
-      <div class="rest-card-img bg3">
-        🍔
-        <span class="rest-card-badge">🆕 New</span>
-        <div class="rest-card-fav">♡</div>
-      </div>
-      <div class="rest-card-body">
-        <h3>Burger Nation</h3>
-        <div class="rest-card-meta">
-          <span>⭐ 4.5</span>
-          <span>⏱ 18 min</span>
-          <span>🛵 Free delivery</span>
-        </div>
-        <div class="rest-card-footer">
-          <div class="rest-tags">
-            <span class="tag">American</span>
-            <span class="tag">Burgers</span>
-          </div>
-          <button class="order-btn">Order Now</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="rest-card">
-      <div class="rest-card-img bg4">
-        🍣
-        <div class="rest-card-fav">♡</div>
-      </div>
-      <div class="rest-card-body">
-        <h3>Sushi Garden</h3>
-        <div class="rest-card-meta">
-          <span>⭐ 4.7</span>
-          <span>⏱ 35 min</span>
-          <span>🛵 ₹40 delivery</span>
-        </div>
-        <div class="rest-card-footer">
-          <div class="rest-tags">
-            <span class="tag">Japanese</span>
-            <span class="tag">Sushi</span>
-          </div>
-          <button class="order-btn">Order Now</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="rest-card">
-      <div class="rest-card-img bg5">
-        🍜
-        <span class="rest-card-badge">⚡ Fast</span>
-        <div class="rest-card-fav">♡</div>
-      </div>
-      <div class="rest-card-body">
-        <h3>Noodle House</h3>
-        <div class="rest-card-meta">
-          <span>⭐ 4.4</span>
-          <span>⏱ 20 min</span>
-          <span>🛵 Free delivery</span>
-        </div>
-        <div class="rest-card-footer">
-          <div class="rest-tags">
-            <span class="tag">Chinese</span>
-            <span class="tag">Noodles</span>
-          </div>
-          <button class="order-btn">Order Now</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="rest-card">
-      <div class="rest-card-img bg6">
-        🌮
-        <div class="rest-card-fav">♡</div>
-      </div>
-      <div class="rest-card-body">
-        <h3>Taco Fiesta</h3>
-        <div class="rest-card-meta">
-          <span>⭐ 4.3</span>
-          <span>⏱ 28 min</span>
-          <span>🛵 ₹30 delivery</span>
-        </div>
-        <div class="rest-card-footer">
-          <div class="rest-tags">
-            <span class="tag">Mexican</span>
-            <span class="tag">Tacos</span>
-          </div>
-          <button class="order-btn">Order Now</button>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</section>
-
-<!-- HOW IT WORKS -->
-<section class="how-section">
-  <div style="text-align:center">
-    <h2 style="font-family:'Syne',sans-serif;font-size:2.2rem;font-weight:800;letter-spacing:-1px;margin-bottom:8px">How FeastRush Works</h2>
-    <p style="color:var(--muted);font-size:0.95rem">Four simple steps to your next great meal</p>
-  </div>
-  <div class="how-grid">
-    <div class="how-card">
-      <div class="how-num">01</div>
-      <div class="how-icon">📍</div>
-      <h3>Set Your Location</h3>
-      <p>Enter your delivery address and discover restaurants near you.</p>
-    </div>
-    <div class="how-card">
-      <div class="how-num">02</div>
-      <div class="how-icon">🍽️</div>
-      <h3>Choose a Restaurant</h3>
-      <p>Browse menus, check ratings, and pick your favourite spot.</p>
-    </div>
-    <div class="how-card">
-      <div class="how-num">03</div>
-      <div class="how-icon">🛒</div>
-      <h3>Place Your Order</h3>
-      <p>Add items to cart, apply coupons, and pay securely online.</p>
-    </div>
-    <div class="how-card">
-      <div class="how-num">04</div>
-      <div class="how-icon">🛵</div>
-      <h3>Track & Enjoy</h3>
-      <p>Watch your order in real-time as it comes straight to your door.</p>
-    </div>
-  </div>
-</section>
-
-<!-- CTA -->
-<section class="cta-section">
-  <h2>Ready to order?<br/>Your food is waiting.</h2>
-  <p>Join 500,000+ happy customers already using FeastRush</p>
-  <button class="btn btn-primary">Get Started — It's Free</button>
-</section>
-
-<!-- FOOTER -->
-<footer>
-  <div class="logo">Feast<span>Rush</span></div>
-  <p style="color:var(--muted);font-size:0.82rem">© 2026 FeastRush. All rights reserved.</p>
+  <!-- NAV -->
   <nav>
-    <a href="#">About</a>
-    <a href="#">Partner with us</a>
-    <a href="#">Privacy</a>
-    <a href="#">Contact</a>
+    <div class="logo">Feast<span>Rush</span></div>
+    <ul class="nav-links">
+      <li><a href="#">Restaurants</a></li>
+      <li><a href="#">Offers</a></li>
+      <li><a href="#">Track Order</a></li>
+      <li><a href="#">Become a Partner</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="btn btn-ghost">Log In</button>
+      <button class="btn btn-primary">Sign Up Free</button>
+    </div>
   </nav>
-</footer>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">Now delivering in 200+ cities</div>
+      <h1>
+        Hungry?<br />
+        We've got<br />
+        <span class="highlight">1000+</span><br />
+        restaurants.
+      </h1>
+      <p>Order from your favourite local spots or discover new ones. Fast delivery, real-time tracking, and the best
+        food — all in one place.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary">Order Now</button>
+        <button class="btn btn-ghost">Browse Restaurants</button>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-num">1,240+</span>
+          <span class="stat-label">Restaurants</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num">25 min</span>
+          <span class="stat-label">Avg. Delivery</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num">4.8 ⭐</span>
+          <span class="stat-label">App Rating</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="float-tag t1">🔥 Trending Now</div>
+      <div class="float-tag t2">✅ Order Confirmed!</div>
+      <div class="phone-mockup">
+        <div class="phone-top">
+          <div class="phone-top-left">
+            <small>Delivering to</small>
+            <strong>📍 Surat, Gujarat</strong>
+          </div>
+          <div class="cart-btn">
+            🛒
+            <div class="cart-dot">3</div>
+          </div>
+        </div>
+        <div class="search-bar">🔍 Search restaurants or dishes...</div>
+        <div class="category-chips">
+          <div class="chip active">All</div>
+          <div class="chip">🍕 Pizza</div>
+          <div class="chip">🍱 Biryani</div>
+          <div class="chip">🍔 Burgers</div>
+        </div>
+        <div class="restaurant-card-mini">
+          <div class="rest-emoji">🍕</div>
+          <div class="rest-info">
+            <strong>Pizza Palace</strong>
+            <small>Italian · Pizza · Pasta</small>
+          </div>
+          <div class="rest-meta">
+            <div class="rest-rating">⭐ 4.8</div>
+            <div class="rest-time">22 min</div>
+          </div>
+        </div>
+        <div class="restaurant-card-mini">
+          <div class="rest-emoji">🍱</div>
+          <div class="rest-info">
+            <strong>Biryani Bros</strong>
+            <small>Indian · Biryani · Curry</small>
+          </div>
+          <div class="rest-meta">
+            <div class="rest-rating">⭐ 4.6</div>
+            <div class="rest-time">30 min</div>
+          </div>
+        </div>
+        <div class="restaurant-card-mini">
+          <div class="rest-emoji">🍔</div>
+          <div class="rest-info">
+            <strong>Burger Nation</strong>
+            <small>American · Burgers · Fries</small>
+          </div>
+          <div class="rest-meta">
+            <div class="rest-rating">⭐ 4.5</div>
+            <div class="rest-time">18 min</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEARCH SECTION -->
+  <div class="search-section">
+    <h2>Find Food Near You</h2>
+    <div class="big-search">
+      <input type="text" placeholder="Search for restaurants, dishes, cuisines..." />
+      <button class="btn btn-primary">Search 🔍</button>
+    </div>
+  </div>
+
+  <!-- CATEGORIES -->
+  <section class="section">
+    <div class="section-header">
+      <h2>What are you craving?</h2>
+      <a href="#">View all →</a>
+    </div>
+    <div class="category-grid">
+      <div class="cat-card"><span class="cat-emoji">🍕</span><span class="cat-name">Pizza</span></div>
+      <div class="cat-card"><span class="cat-emoji">🍱</span><span class="cat-name">Biryani</span></div>
+      <div class="cat-card"><span class="cat-emoji">🍔</span><span class="cat-name">Burgers</span></div>
+      <div class="cat-card"><span class="cat-emoji">🍣</span><span class="cat-name">Sushi</span></div>
+      <div class="cat-card"><span class="cat-emoji">🌮</span><span class="cat-name">Mexican</span></div>
+      <div class="cat-card"><span class="cat-emoji">🍜</span><span class="cat-name">Noodles</span></div>
+    </div>
+  </section>
+
+  <!-- RESTAURANTS -->
+  <section class="section" style="padding-top:0">
+    <div class="section-header">
+      <h2>Top Restaurants</h2>
+      <a href="#">See all →</a>
+    </div>
+    <div class="restaurants-grid">
+
+      <div class="rest-card">
+        <div class="rest-card-img bg1">
+          🍕
+          <span class="rest-card-badge">🔥 Popular</span>
+          <div class="rest-card-fav">♡</div>
+        </div>
+        <div class="rest-card-body">
+          <h3>Pizza Palace</h3>
+          <div class="rest-card-meta">
+            <span>⭐ 4.8</span>
+            <span>⏱ 22 min</span>
+            <span>🛵 Free delivery</span>
+          </div>
+          <div class="rest-card-footer">
+            <div class="rest-tags">
+              <span class="tag">Italian</span>
+              <span class="tag">Pizza</span>
+            </div>
+            <button class="order-btn">Order Now</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="rest-card">
+        <div class="rest-card-img bg2">
+          🍱
+          <span class="rest-card-badge">✅ Top Rated</span>
+          <div class="rest-card-fav">♡</div>
+        </div>
+        <div class="rest-card-body">
+          <h3>Biryani Bros</h3>
+          <div class="rest-card-meta">
+            <span>⭐ 4.6</span>
+            <span>⏱ 30 min</span>
+            <span>🛵 ₹25 delivery</span>
+          </div>
+          <div class="rest-card-footer">
+            <div class="rest-tags">
+              <span class="tag">Indian</span>
+              <span class="tag">Biryani</span>
+            </div>
+            <button class="order-btn">Order Now</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="rest-card">
+        <div class="rest-card-img bg3">
+          🍔
+          <span class="rest-card-badge">🆕 New</span>
+          <div class="rest-card-fav">♡</div>
+        </div>
+        <div class="rest-card-body">
+          <h3>Burger Nation</h3>
+          <div class="rest-card-meta">
+            <span>⭐ 4.5</span>
+            <span>⏱ 18 min</span>
+            <span>🛵 Free delivery</span>
+          </div>
+          <div class="rest-card-footer">
+            <div class="rest-tags">
+              <span class="tag">American</span>
+              <span class="tag">Burgers</span>
+            </div>
+            <button class="order-btn">Order Now</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="rest-card">
+        <div class="rest-card-img bg4">
+          🍣
+          <div class="rest-card-fav">♡</div>
+        </div>
+        <div class="rest-card-body">
+          <h3>Sushi Garden</h3>
+          <div class="rest-card-meta">
+            <span>⭐ 4.7</span>
+            <span>⏱ 35 min</span>
+            <span>🛵 ₹40 delivery</span>
+          </div>
+          <div class="rest-card-footer">
+            <div class="rest-tags">
+              <span class="tag">Japanese</span>
+              <span class="tag">Sushi</span>
+            </div>
+            <button class="order-btn">Order Now</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="rest-card">
+        <div class="rest-card-img bg5">
+          🍜
+          <span class="rest-card-badge">⚡ Fast</span>
+          <div class="rest-card-fav">♡</div>
+        </div>
+        <div class="rest-card-body">
+          <h3>Noodle House</h3>
+          <div class="rest-card-meta">
+            <span>⭐ 4.4</span>
+            <span>⏱ 20 min</span>
+            <span>🛵 Free delivery</span>
+          </div>
+          <div class="rest-card-footer">
+            <div class="rest-tags">
+              <span class="tag">Chinese</span>
+              <span class="tag">Noodles</span>
+            </div>
+            <button class="order-btn">Order Now</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="rest-card">
+        <div class="rest-card-img bg6">
+          🌮
+          <div class="rest-card-fav">♡</div>
+        </div>
+        <div class="rest-card-body">
+          <h3>Taco Fiesta</h3>
+          <div class="rest-card-meta">
+            <span>⭐ 4.3</span>
+            <span>⏱ 28 min</span>
+            <span>🛵 ₹30 delivery</span>
+          </div>
+          <div class="rest-card-footer">
+            <div class="rest-tags">
+              <span class="tag">Mexican</span>
+              <span class="tag">Tacos</span>
+            </div>
+            <button class="order-btn">Order Now</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how-section">
+    <div style="text-align:center">
+      <h2 style="font-family:'Syne',sans-serif;font-size:2.2rem;font-weight:800;letter-spacing:-1px;margin-bottom:8px">
+        How FeastRush Works</h2>
+      <p style="color:var(--muted);font-size:0.95rem">Four simple steps to your next great meal</p>
+    </div>
+    <div class="how-grid">
+      <div class="how-card">
+        <div class="how-num">01</div>
+        <div class="how-icon">📍</div>
+        <h3>Set Your Location</h3>
+        <p>Enter your delivery address and discover restaurants near you.</p>
+      </div>
+      <div class="how-card">
+        <div class="how-num">02</div>
+        <div class="how-icon">🍽️</div>
+        <h3>Choose a Restaurant</h3>
+        <p>Browse menus, check ratings, and pick your favourite spot.</p>
+      </div>
+      <div class="how-card">
+        <div class="how-num">03</div>
+        <div class="how-icon">🛒</div>
+        <h3>Place Your Order</h3>
+        <p>Add items to cart, apply coupons, and pay securely online.</p>
+      </div>
+      <div class="how-card">
+        <div class="how-num">04</div>
+        <div class="how-icon">🛵</div>
+        <h3>Track & Enjoy</h3>
+        <p>Watch your order in real-time as it comes straight to your door.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <h2>Ready to order?<br />Your food is waiting.</h2>
+    <p>Join 500,000+ happy customers already using FeastRush</p>
+    <button class="btn btn-primary">Get Started — It's Free</button>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="logo">Feast<span>Rush</span></div>
+    <p style="color:var(--muted);font-size:0.82rem">© 2026 FeastRush. All rights reserved.</p>
+    <nav>
+      <a href="#">About</a>
+      <a href="#">Partner with us</a>
+      <a href="#">Privacy</a>
+      <a href="#">Contact</a>
+    </nav>
+  </footer>
 
 </body>
+
 </html>
