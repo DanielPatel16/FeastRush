@@ -1185,7 +1185,9 @@
         }
 
         // Redirect after short delay
-        setTimeout(() => redirectByRole(data.user.role), 1500);
+        setTimeout(() => {
+        redirectByRole(data.user.role);
+        }, 1200);
 
       } catch (err) {
         btn.classList.remove('loading');

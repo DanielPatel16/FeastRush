@@ -323,7 +323,7 @@ db.users.insertOne({
   lastName: "User",
   email: "admin@feastrush.com",
   phone: "9999999999",
-  password: "<bcrypt hashed password>",
+  password: "$2b$10$nfLAvmfJNWb4KEM0b2v3F.wT.lcXx76L1HMNeffl7HPxmFot8JH02",
   role: "admin",
   isActive: true
 })

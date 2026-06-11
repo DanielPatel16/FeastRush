@@ -799,21 +799,20 @@
     }
   </style>
 </head>
-
 <body>
 
   <!-- NAV -->
   <nav>
     <div class="logo">Feast<span>Rush</span></div>
     <ul class="nav-links">
-      <li><a href="#">Restaurants</a></li>
+      <li><a href="restaurants.html">Restaurants</a></li>
       <li><a href="#">Offers</a></li>
       <li><a href="#">Track Order</a></li>
       <li><a href="#">Become a Partner</a></li>
     </ul>
     <div class="nav-actions">
-      <button class="btn btn-ghost">Log In</button>
-      <button class="btn btn-primary">Sign Up Free</button>
+      <div class="nav-actions" id="nav-actions">
+</div>
     </div>
   </nav>
 
@@ -1132,7 +1131,87 @@
       <a href="#">Contact</a>
     </nav>
   </footer>
+  <script>
+const token = localStorage.getItem('feastrush_token');
+const user = JSON.parse(localStorage.getItem('feastrush_user'));
 
+const navActions = document.getElementById('nav-actions');
+
+if(token && user){
+
+  navActions.innerHTML = `
+    <div class="profile-menu">
+      <button id="profileBtn"
+        style="
+        width:45px;
+        height:45px;
+        border-radius:50%;
+        border:none;
+        cursor:pointer;
+        font-size:20px;">
+        👤
+      </button>
+
+      <div id="dropdown"
+        style="
+        display:none;
+        position:absolute;
+        top:70px;
+        right:30px;
+        background:#222;
+        border:1px solid #444;
+        border-radius:10px;
+        padding:10px;
+        min-width:180px;">
+        
+        <p>${user.firstName}</p>
+        <hr>
+
+        <a href="#">My Profile</a><br><br>
+        <a href="#">My Orders</a><br><br>
+
+        <button onclick="logout()">
+          Logout
+        </button>
+      </div>
+    </div>
+  `;
+
+  document
+    .getElementById('profileBtn')
+    .addEventListener('click', () => {
+
+      const d = document.getElementById('dropdown');
+
+      d.style.display =
+        d.style.display === 'block'
+          ? 'none'
+          : 'block';
+    });
+
+}else{
+
+  navActions.innerHTML = `
+    <button class="btn btn-ghost"
+      onclick="window.location.href='auth.html'">
+      Log In
+    </button>
+
+    <button class="btn btn-primary"
+      onclick="window.location.href='auth.html'">
+      Sign Up Free
+    </button>
+  `;
+}
+
+function logout(){
+  localStorage.removeItem('feastrush_token');
+  localStorage.removeItem('feastrush_user');
+
+  window.location.href = 'index.html';
+}
+
+</script>
 </body>
 
 </html>
